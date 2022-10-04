@@ -1,18 +1,130 @@
 package whiteboard;
 
+import com.intellij.uiDesigner.core.GridConstraints;
+import com.intellij.uiDesigner.core.GridLayoutManager;
+import com.intellij.uiDesigner.core.Spacer;
+
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class whiteboardUI extends JFrame {
-    private JPanel panel1;
-    private JComboBox comboBox1;
-    private JButton btn_line;
-    private JButton btn_rectangle;
-    private JButton btn_circle;
-    private JButton btn_triangle;
-    private JButton btn_free;
-    private JButton btn_text;
-    private JComboBox comboBox2;
+    private JPanel mainPanel;
+    private JButton btnLine;
+    private JButton btnRectangle;
+    private JButton btnCircle;
+    private JButton btnTriangle;
+    private JButton btnFree;
+    private JButton btnText;
+    private JButton btnFile;
+    private JButton btnColor;
+    private JTextPane rgbShow;
+    private JList listConnectedUsers;
+    private JList listChatWindow;
+    private JTextField inputChat;
+    private JButton btnChatSend;
+
+
+    public whiteboardUI(String title) {
+
+        super(title);
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setPreferredSize(new Dimension(1500, 800));
+        this.setContentPane(mainPanel);
+
+
+        final JPopupMenu filePopup = new JPopupMenu();
+        final JPopupMenu colorPopup = new JPopupMenu();
+//        final PopupFactory cPopup = new PopupFactory();
+
+        filePopup.add(new JMenuItem(new AbstractAction("Option 1") {
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(mainPanel, "Option 1 selected");
+            }
+        }));
+        filePopup.add(new JMenuItem(new AbstractAction("Option 2") {
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(mainPanel, "Option 2 selected");
+            }
+        }));
+
+        btnFile.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                filePopup.show(e.getComponent(), e.getX(), e.getY());
+            }
+        });
+
+        JLabel redLabel = new JLabel("Red");
+        JLabel blueLabel = new JLabel("Blue");
+        JLabel greenLabel = new JLabel("Green");
+        JSlider redSlider = new JSlider();
+        redSlider.setMinimum(0);
+        redSlider.setMaximum(255);
+        JSlider blueSlider = new JSlider();
+        blueSlider.setMinimum(0);
+        blueSlider.setMaximum(255);
+        JSlider greenSlider = new JSlider();
+        greenSlider.setMinimum(0);
+        greenSlider.setMaximum(255);
+
+        rgbShow.setForeground(new Color(redSlider.getValue(), blueSlider.getValue(), greenSlider.getValue()));
+        rgbShow.setBackground(new Color(redSlider.getValue(), blueSlider.getValue(), greenSlider.getValue()));
+        redSlider.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                rgbShow.setForeground(new Color(redSlider.getValue(), blueSlider.getValue(), greenSlider.getValue()));
+                rgbShow.setBackground(new Color(redSlider.getValue(), blueSlider.getValue(), greenSlider.getValue()));
+            }
+        });
+
+        blueSlider.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                rgbShow.setForeground(new Color(redSlider.getValue(), blueSlider.getValue(), greenSlider.getValue()));
+                rgbShow.setBackground(new Color(redSlider.getValue(), blueSlider.getValue(), greenSlider.getValue()));
+            }
+        });
+
+        greenSlider.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                rgbShow.setForeground(new Color(redSlider.getValue(), blueSlider.getValue(), greenSlider.getValue()));
+                rgbShow.setBackground(new Color(redSlider.getValue(), blueSlider.getValue(), greenSlider.getValue()));
+            }
+        });
+
+
+        JPanel red = new JPanel();
+        red.add(redLabel);
+        red.add(redSlider);
+
+        JPanel blue = new JPanel();
+        blue.add(blueLabel);
+        blue.add(blueSlider);
+
+        JPanel green = new JPanel();
+        green.add(greenLabel);
+        green.add(greenSlider);
+
+        colorPopup.add(red);
+        colorPopup.add(blue);
+        colorPopup.add(green);
+        btnColor.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                colorPopup.show(e.getComponent(), e.getX(), e.getY() + 10);
+            }
+        });
+
+        String week[] = {"Monday", "Tuesday", "Wednesday",
+                "Thursday", "Friday", "Saturday", "Sunday"};
+
+        //create list
+        listConnectedUsers.setListData(week);
+
+
+        this.pack();
+    }
 
     {
 // GUI initializer generated by IntelliJ IDEA GUI Designer
@@ -29,41 +141,70 @@ public class whiteboardUI extends JFrame {
      * @noinspection ALL
      */
     private void $$$setupUI$$$() {
-        panel1 = new JPanel();
-        panel1.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(2, 1, new Insets(0, 0, 0, 0), -1, -1));
+        mainPanel = new JPanel();
+        mainPanel.setLayout(new GridLayoutManager(2, 4, new Insets(0, 0, 0, 0), -1, -1));
+        final JPanel panel1 = new JPanel();
+        panel1.setLayout(new GridLayoutManager(1, 9, new Insets(0, 0, 0, 0), -1, -1));
+        mainPanel.add(panel1, new GridConstraints(0, 0, 1, 4, GridConstraints.ANCHOR_NORTHWEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        btnRectangle = new JButton();
+        btnRectangle.setText("Rectangle");
+        panel1.add(btnRectangle, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        btnCircle = new JButton();
+        btnCircle.setText("Circle");
+        panel1.add(btnCircle, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        btnTriangle = new JButton();
+        btnTriangle.setText("Triangle");
+        panel1.add(btnTriangle, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        btnFree = new JButton();
+        btnFree.setText("Freehand");
+        panel1.add(btnFree, new GridConstraints(0, 5, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        btnText = new JButton();
+        btnText.setText("Text");
+        panel1.add(btnText, new GridConstraints(0, 6, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        btnLine = new JButton();
+        btnLine.setText("Line");
+        panel1.add(btnLine, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        final JToolBar toolBar1 = new JToolBar();
+        panel1.add(toolBar1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(-1, 20), null, 0, false));
+        btnFile = new JButton();
+        btnFile.setText("File");
+        toolBar1.add(btnFile);
+        btnColor = new JButton();
+        btnColor.setText("Color");
+        panel1.add(btnColor, new GridConstraints(0, 7, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        rgbShow = new JTextPane();
+        rgbShow.setText("Label");
+        panel1.add(rgbShow, new GridConstraints(0, 8, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel2 = new JPanel();
-        panel2.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        panel1.add(panel2, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        comboBox1 = new JComboBox();
-        panel2.add(comboBox1);
-        btn_line = new JButton();
-        btn_line.setText("Line");
-        panel2.add(btn_line);
-        btn_rectangle = new JButton();
-        btn_rectangle.setText("Rectangle");
-        panel2.add(btn_rectangle);
-        btn_circle = new JButton();
-        btn_circle.setText("Circle");
-        panel2.add(btn_circle);
-        btn_triangle = new JButton();
-        btn_triangle.setText("Triangle");
-        panel2.add(btn_triangle);
-        btn_free = new JButton();
-        btn_free.setText("Freehand");
-        panel2.add(btn_free);
-        btn_text = new JButton();
-        btn_text.setText("Text");
-        panel2.add(btn_text);
-        comboBox2 = new JComboBox();
-        panel2.add(comboBox2);
-        final com.intellij.uiDesigner.core.Spacer spacer1 = new com.intellij.uiDesigner.core.Spacer();
-        panel1.add(spacer1, new com.intellij.uiDesigner.core.GridConstraints(1, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_VERTICAL, 1, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        panel2.setLayout(new GridLayoutManager(2, 1, new Insets(0, 0, 0, 0), -1, -1));
+        mainPanel.add(panel2, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        listConnectedUsers = new JList();
+        panel2.add(listConnectedUsers, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_VERTICAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
+        final Spacer spacer1 = new Spacer();
+        panel2.add(spacer1, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        final JPanel panel3 = new JPanel();
+        panel3.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        mainPanel.add(panel3, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        final JPanel panel4 = new JPanel();
+        panel4.setLayout(new GridLayoutManager(2, 1, new Insets(0, 0, 0, 0), -1, -1));
+        mainPanel.add(panel4, new GridConstraints(1, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        listChatWindow = new JList();
+        panel4.add(listChatWindow, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
+        final JPanel panel5 = new JPanel();
+        panel5.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
+        panel4.add(panel5, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        inputChat = new JTextField();
+        panel5.add(inputChat, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        btnChatSend = new JButton();
+        btnChatSend.setText("Send");
+        panel5.add(btnChatSend, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
     }
 
     /**
      * @noinspection ALL
      */
     public JComponent $$$getRootComponent$$$() {
-        return panel1;
+        return mainPanel;
     }
+
 }
