@@ -35,7 +35,7 @@ public class whiteboardUI extends JFrame implements ActionListener {
 
         super(title);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setPreferredSize(new Dimension(1500, 900));
+        this.setPreferredSize(new Dimension(1400, 900));
         this.setContentPane(mainPanel);
         this.drawingPanel = new DrawingPanel();
         this.drawingPanelContainer.add(drawingPanel);
@@ -65,11 +65,14 @@ public class whiteboardUI extends JFrame implements ActionListener {
         btnTriangle.setActionCommand("Triangle");
         btnCircle.setActionCommand("Circle");
         btnFree.setActionCommand("Free");
+        btnText.setActionCommand("Text");
         btnLine.addActionListener(this);
         btnRectangle.addActionListener(this);
         btnTriangle.addActionListener(this);
         btnCircle.addActionListener(this);
         btnFree.addActionListener(this);
+        btnText.addActionListener(this);
+
 
         JLabel redLabel = new JLabel("Red");
         JLabel blueLabel = new JLabel("Blue");
@@ -111,7 +114,6 @@ public class whiteboardUI extends JFrame implements ActionListener {
                 rgbShow.setBackground(new Color(drawingPanel.getRgbValue()));
             }
         });
-
 
         JPanel red = new JPanel();
         red.add(redLabel);
@@ -158,7 +160,58 @@ public class whiteboardUI extends JFrame implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        drawingPanel.setDrawMode(e.getActionCommand());
+        String drawMode = e.getActionCommand();
+        drawingPanel.setDrawMode(drawMode);
+        switch (drawMode) {
+            case "Line":
+                btnLine.setForeground(Color.DARK_GRAY);
+                btnRectangle.setForeground(new Color(160, 167, 180));
+                btnCircle.setForeground(new Color(160, 167, 180));
+                btnTriangle.setForeground(new Color(160, 167, 180));
+                btnFree.setForeground(new Color(160, 167, 180));
+                btnText.setForeground(new Color(160, 167, 180));
+                break;
+            case "Rectangle":
+                btnLine.setForeground(new Color(160, 167, 180));
+                btnRectangle.setForeground(Color.DARK_GRAY);
+                btnCircle.setForeground(new Color(160, 167, 180));
+                btnTriangle.setForeground(new Color(160, 167, 180));
+                btnFree.setForeground(new Color(160, 167, 180));
+                btnText.setForeground(new Color(160, 167, 180));
+                break;
+            case "Circle":
+                btnLine.setForeground(new Color(160, 167, 180));
+                btnRectangle.setForeground(new Color(160, 167, 180));
+                btnCircle.setForeground(Color.DARK_GRAY);
+                btnTriangle.setForeground(new Color(160, 167, 180));
+                btnFree.setForeground(new Color(160, 167, 180));
+                btnText.setForeground(new Color(160, 167, 180));
+                break;
+            case "Triangle":
+                btnLine.setForeground(new Color(160, 167, 180));
+                btnRectangle.setForeground(new Color(160, 167, 180));
+                btnCircle.setForeground(new Color(160, 167, 180));
+                btnTriangle.setForeground(Color.DARK_GRAY);
+                btnFree.setForeground(new Color(160, 167, 180));
+                btnText.setForeground(new Color(160, 167, 180));
+                break;
+            case "Free":
+                btnLine.setForeground(new Color(160, 167, 180));
+                btnRectangle.setForeground(new Color(160, 167, 180));
+                btnCircle.setForeground(new Color(160, 167, 180));
+                btnTriangle.setForeground(new Color(160, 167, 180));
+                btnFree.setForeground(Color.DARK_GRAY);
+                btnText.setForeground(new Color(160, 167, 180));
+                break;
+            case "Text":
+                btnLine.setForeground(new Color(160, 167, 180));
+                btnRectangle.setForeground(new Color(160, 167, 180));
+                btnCircle.setForeground(new Color(160, 167, 180));
+                btnTriangle.setForeground(new Color(160, 167, 180));
+                btnFree.setForeground(new Color(160, 167, 180));
+                btnText.setForeground(Color.DARK_GRAY);
+                break;
+        }
     }
 
     {

@@ -7,8 +7,9 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
-public class DrawingPanel extends JPanel implements ActionListener, MouseListener, MouseMotionListener {
+public class DrawingPanel extends JPanel implements ActionListener, MouseListener, MouseMotionListener, KeyListener {
 
     private final BufferedImage bufferedImage;
     private Graphics2D g2d;
@@ -17,6 +18,7 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
     private Point second = new Point(0, 0);
     private JLabel imageLabel;
     private int rgbValue;
+    private String userInput;
 
     public DrawingPanel() {
         this.bufferedImage = new BufferedImage(1000, 800, BufferedImage.TYPE_INT_ARGB);
@@ -43,7 +45,7 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
 
     public void setDrawMode(String drawMode) {
         this.drawMode = drawMode;
-        System.out.println("changed" + drawMode);
+        System.out.println(drawMode);
     }
 
     public int getRgbValue() {
@@ -63,7 +65,10 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
 
     @Override
     public void mouseClicked(MouseEvent e) {
-
+        if (drawMode.equals("Text")) {
+            this.userInput = JOptionPane.showInputDialog("Enter text");
+            draw();
+        }
     }
 
     @Override
@@ -75,8 +80,11 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        second.setLocation(e.getX(), e.getY());
-        this.draw();
+        if (!drawMode.equals("Text")){
+            second.setLocation(e.getX(), e.getY());
+            this.draw();
+        }
+
     }
 
     @Override
@@ -106,11 +114,36 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
 
     }
 
+    @Override
+    public void keyTyped(KeyEvent e) {
+
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+
+    }
+
     //    @Override
     public void draw() {
-        if (!first.equals(second)) {
-            this.g2d.setPaint(new Color(rgbValue));
-            this.g2d.setStroke(new BasicStroke(5));
+        this.g2d.setPaint(new Color(rgbValue));
+        this.g2d.setStroke(new BasicStroke(5));
+        if (drawMode.equals("Text")) {
+            System.out.println("Text drawing");
+            System.out.println(this.userInput);
+            Font font = new Font("TimesRoman", Font.BOLD, 20);
+            this.g2d.setFont(font);
+            this.g2d.drawString(this.userInput, first.x, first.y);
+//            FontMetrics fontMetrics = this.g2d.getFontMetrics();
+//            int stringWidth = fontMetrics.stringWidth(this.userInput);
+//            int stringHeight = fontMetrics.getAscent();
+//            this.g2d.drawString(this.userInput, (1000 - stringWidth) / 2, 800 / 2 + stringHeight / 4);
+        } else if (!first.equals(second)) {
             switch (drawMode) {
                 case "Line":
                     this.g2d.drawLine(first.x, first.y, second.x, second.y);
@@ -132,7 +165,7 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
                     this.g2d.drawOval(topLeft.x, topLeft.y, width, height);
                     break;
                 case "Triangle":
-                    int[] xPoints = {first.x, (first.x+second.x)/2,second.x};
+                    int[] xPoints = {first.x, (first.x + second.x) / 2, second.x};
                     int[] yPoints = {second.y, first.y, second.y};
 
                     this.g2d.drawPolygon(xPoints, yPoints, 3);
@@ -142,23 +175,22 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
                     this.g2d.drawLine(first.x, first.y, second.x, second.y);
                     break;
             }
-            try {
-                ImageIO.write(this.bufferedImage, "PNG", new File("whiteboard.png"));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            this.remove(imageLabel);
-            this.revalidate();
-            try {
-                imageLabel = new JLabel(new ImageIcon(ImageIO.read(new File("whiteboard.png"))));
-                this.add(imageLabel);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
-            this.repaint();
+        }
+        try {
+            ImageIO.write(this.bufferedImage, "PNG", new File("whiteboard.png"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        this.remove(imageLabel);
+        this.revalidate();
+        try {
+            imageLabel = new JLabel(new ImageIcon(ImageIO.read(new File("whiteboard.png"))));
+            this.add(imageLabel);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
+        this.repaint();
     }
 
 }
