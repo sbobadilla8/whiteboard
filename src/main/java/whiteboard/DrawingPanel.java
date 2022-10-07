@@ -45,7 +45,6 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
 
     public void setDrawMode(String drawMode) {
         this.drawMode = drawMode;
-        System.out.println(drawMode);
     }
 
     public int getRgbValue() {

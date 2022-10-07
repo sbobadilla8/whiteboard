@@ -154,14 +154,14 @@ public class whiteboardUI extends JFrame implements ActionListener {
             e.printStackTrace();
         }
 
+        String drawMode = "Line";
+        drawingPanel.setDrawMode(drawMode);
+        updateDrawButtonFocus(drawMode);
 
         this.pack();
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        String drawMode = e.getActionCommand();
-        drawingPanel.setDrawMode(drawMode);
+    public void updateDrawButtonFocus(String drawMode) {
         switch (drawMode) {
             case "Line":
                 btnLine.setForeground(Color.DARK_GRAY);
@@ -212,6 +212,13 @@ public class whiteboardUI extends JFrame implements ActionListener {
                 btnText.setForeground(Color.DARK_GRAY);
                 break;
         }
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        String drawMode = e.getActionCommand();
+        drawingPanel.setDrawMode(drawMode);
+        updateDrawButtonFocus(drawMode);
     }
 
     {
