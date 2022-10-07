@@ -133,15 +133,9 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
         this.g2d.setPaint(new Color(rgbValue));
         this.g2d.setStroke(new BasicStroke(5));
         if (drawMode.equals("Text")) {
-            System.out.println("Text drawing");
-            System.out.println(this.userInput);
             Font font = new Font("TimesRoman", Font.BOLD, 20);
             this.g2d.setFont(font);
             this.g2d.drawString(this.userInput, first.x, first.y);
-//            FontMetrics fontMetrics = this.g2d.getFontMetrics();
-//            int stringWidth = fontMetrics.stringWidth(this.userInput);
-//            int stringHeight = fontMetrics.getAscent();
-//            this.g2d.drawString(this.userInput, (1000 - stringWidth) / 2, 800 / 2 + stringHeight / 4);
         } else if (!first.equals(second)) {
             switch (drawMode) {
                 case "Line":
