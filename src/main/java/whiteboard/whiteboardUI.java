@@ -8,11 +8,11 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
+import java.io.File;
+import java.io.IOException;
 
-public class whiteboardUI extends JFrame {
+public class whiteboardUI extends JFrame implements ActionListener {
     private JPanel mainPanel;
     private JButton btnLine;
     private JButton btnRectangle;
@@ -27,19 +27,21 @@ public class whiteboardUI extends JFrame {
     private JList listChatWindow;
     private JTextField inputChat;
     private JButton btnChatSend;
+    private JPanel drawingPanelContainer;
+    private DrawingPanel drawingPanel;
 
 
     public whiteboardUI(String title) {
 
         super(title);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setPreferredSize(new Dimension(1500, 800));
+        this.setPreferredSize(new Dimension(1500, 900));
         this.setContentPane(mainPanel);
-
+        this.drawingPanel = new DrawingPanel();
+        this.drawingPanelContainer.add(drawingPanel);
 
         final JPopupMenu filePopup = new JPopupMenu();
         final JPopupMenu colorPopup = new JPopupMenu();
-//        final PopupFactory cPopup = new PopupFactory();
 
         filePopup.add(new JMenuItem(new AbstractAction("Option 1") {
             public void actionPerformed(ActionEvent e) {
@@ -58,6 +60,17 @@ public class whiteboardUI extends JFrame {
             }
         });
 
+        btnLine.setActionCommand("Line");
+        btnRectangle.setActionCommand("Rectangle");
+        btnTriangle.setActionCommand("Triangle");
+        btnCircle.setActionCommand("Circle");
+        btnFree.setActionCommand("Free");
+        btnLine.addActionListener(this);
+        btnRectangle.addActionListener(this);
+        btnTriangle.addActionListener(this);
+        btnCircle.addActionListener(this);
+        btnFree.addActionListener(this);
+
         JLabel redLabel = new JLabel("Red");
         JLabel blueLabel = new JLabel("Blue");
         JLabel greenLabel = new JLabel("Green");
@@ -71,26 +84,31 @@ public class whiteboardUI extends JFrame {
         greenSlider.setMinimum(0);
         greenSlider.setMaximum(255);
 
-        rgbShow.setForeground(new Color(redSlider.getValue(), blueSlider.getValue(), greenSlider.getValue()));
-        rgbShow.setBackground(new Color(redSlider.getValue(), blueSlider.getValue(), greenSlider.getValue()));
+        this.drawingPanel.setRgbValue(new Color(redSlider.getValue(), greenSlider.getValue(), blueSlider.getValue()).getRGB());
+
+        rgbShow.setForeground(new Color(this.drawingPanel.getRgbValue()));
+        rgbShow.setBackground(new Color(this.drawingPanel.getRgbValue()));
         redSlider.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
-                rgbShow.setForeground(new Color(redSlider.getValue(), blueSlider.getValue(), greenSlider.getValue()));
-                rgbShow.setBackground(new Color(redSlider.getValue(), blueSlider.getValue(), greenSlider.getValue()));
+                drawingPanel.setRgbValue(new Color(redSlider.getValue(), greenSlider.getValue(), blueSlider.getValue()).getRGB());
+                rgbShow.setForeground(new Color(drawingPanel.getRgbValue()));
+                rgbShow.setBackground(new Color(drawingPanel.getRgbValue()));
             }
         });
 
         blueSlider.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
-                rgbShow.setForeground(new Color(redSlider.getValue(), blueSlider.getValue(), greenSlider.getValue()));
-                rgbShow.setBackground(new Color(redSlider.getValue(), blueSlider.getValue(), greenSlider.getValue()));
+                drawingPanel.setRgbValue(new Color(redSlider.getValue(), greenSlider.getValue(), blueSlider.getValue()).getRGB());
+                rgbShow.setForeground(new Color(drawingPanel.getRgbValue()));
+                rgbShow.setBackground(new Color(drawingPanel.getRgbValue()));
             }
         });
 
         greenSlider.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
-                rgbShow.setForeground(new Color(redSlider.getValue(), blueSlider.getValue(), greenSlider.getValue()));
-                rgbShow.setBackground(new Color(redSlider.getValue(), blueSlider.getValue(), greenSlider.getValue()));
+                drawingPanel.setRgbValue(new Color(redSlider.getValue(), greenSlider.getValue(), blueSlider.getValue()).getRGB());
+                rgbShow.setForeground(new Color(drawingPanel.getRgbValue()));
+                rgbShow.setBackground(new Color(drawingPanel.getRgbValue()));
             }
         });
 
@@ -99,17 +117,17 @@ public class whiteboardUI extends JFrame {
         red.add(redLabel);
         red.add(redSlider);
 
-        JPanel blue = new JPanel();
-        blue.add(blueLabel);
-        blue.add(blueSlider);
-
         JPanel green = new JPanel();
         green.add(greenLabel);
         green.add(greenSlider);
 
+        JPanel blue = new JPanel();
+        blue.add(blueLabel);
+        blue.add(blueSlider);
+
         colorPopup.add(red);
-        colorPopup.add(blue);
         colorPopup.add(green);
+        colorPopup.add(blue);
         btnColor.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
                 colorPopup.show(e.getComponent(), e.getX(), e.getY() + 10);
@@ -122,8 +140,25 @@ public class whiteboardUI extends JFrame {
         //create list
         listConnectedUsers.setListData(week);
 
+        try {
+            File myObj = new File("whiteboard.png");
+            if (myObj.createNewFile()) {
+                System.out.println("File created: " + myObj.getName());
+            } else {
+                System.out.println("File already exists.");
+            }
+        } catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+
 
         this.pack();
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        drawingPanel.setDrawMode(e.getActionCommand());
     }
 
     {
@@ -182,22 +217,22 @@ public class whiteboardUI extends JFrame {
         panel2.add(listConnectedUsers, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_VERTICAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
         final Spacer spacer1 = new Spacer();
         panel2.add(spacer1, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        drawingPanelContainer = new JPanel();
+        drawingPanelContainer.setLayout(new GridBagLayout());
+        mainPanel.add(drawingPanelContainer, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         final JPanel panel3 = new JPanel();
-        panel3.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
-        mainPanel.add(panel3, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        final JPanel panel4 = new JPanel();
-        panel4.setLayout(new GridLayoutManager(2, 1, new Insets(0, 0, 0, 0), -1, -1));
-        mainPanel.add(panel4, new GridConstraints(1, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        panel3.setLayout(new GridLayoutManager(2, 1, new Insets(0, 0, 0, 0), -1, -1));
+        mainPanel.add(panel3, new GridConstraints(1, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         listChatWindow = new JList();
-        panel4.add(listChatWindow, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
-        final JPanel panel5 = new JPanel();
-        panel5.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
-        panel4.add(panel5, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        panel3.add(listChatWindow, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
+        final JPanel panel4 = new JPanel();
+        panel4.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
+        panel3.add(panel4, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         inputChat = new JTextField();
-        panel5.add(inputChat, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        panel4.add(inputChat, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         btnChatSend = new JButton();
         btnChatSend.setText("Send");
-        panel5.add(btnChatSend, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        panel4.add(btnChatSend, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
     }
 
     /**
