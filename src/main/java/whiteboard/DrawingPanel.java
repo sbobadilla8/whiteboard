@@ -19,6 +19,7 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
     private JLabel imageLabel;
     private int rgbValue;
     private String userInput;
+    private float lineWidth;
 
     public DrawingPanel() {
         this.bufferedImage = new BufferedImage(1000, 800, BufferedImage.TYPE_INT_ARGB);
@@ -45,6 +46,10 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
 
     public void setDrawMode(String drawMode) {
         this.drawMode = drawMode;
+    }
+
+    public void setLineWidth(float lineWidth) {
+        this.lineWidth = lineWidth;
     }
 
     public int getRgbValue() {
@@ -131,7 +136,7 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
     //    @Override
     public void draw() {
         this.g2d.setPaint(new Color(rgbValue));
-        this.g2d.setStroke(new BasicStroke(5));
+        this.g2d.setStroke(new BasicStroke(this.lineWidth));
         if (drawMode.equals("Text")) {
             Font font = new Font("TimesRoman", Font.BOLD, 20);
             this.g2d.setFont(font);
@@ -164,7 +169,6 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
                     this.g2d.drawPolygon(xPoints, yPoints, 3);
                     break;
                 case "Free":
-                    this.g2d.setStroke(new BasicStroke(5));
                     this.g2d.drawLine(first.x, first.y, second.x, second.y);
                     break;
             }

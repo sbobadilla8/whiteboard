@@ -28,6 +28,7 @@ public class whiteboardUI extends JFrame implements ActionListener {
     private JTextField inputChat;
     private JButton btnChatSend;
     private JPanel drawingPanelContainer;
+    private JButton btnLineWidth;
     private DrawingPanel drawingPanel;
 
 
@@ -42,6 +43,7 @@ public class whiteboardUI extends JFrame implements ActionListener {
 
         final JPopupMenu filePopup = new JPopupMenu();
         final JPopupMenu colorPopup = new JPopupMenu();
+        final JPopupMenu lineWidthPopup = new JPopupMenu();
 
         filePopup.add(new JMenuItem(new AbstractAction("Option 1") {
             public void actionPerformed(ActionEvent e) {
@@ -73,6 +75,25 @@ public class whiteboardUI extends JFrame implements ActionListener {
         btnFree.addActionListener(this);
         btnText.addActionListener(this);
 
+        JSlider lineWidthSlider = new JSlider();
+        lineWidthSlider.setMinimum(0);
+        lineWidthSlider.setMaximum(100);
+        lineWidthSlider.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                drawingPanel.setLineWidth(lineWidthSlider.getValue());
+            }
+        });
+        JPanel lineWidthPanel = new JPanel();
+        lineWidthPanel.add(lineWidthSlider);
+
+        lineWidthPopup.add(lineWidthPanel);
+
+        btnLineWidth.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                lineWidthPopup.show(e.getComponent(), e.getX(), e.getY() + 10);
+            }
+        });
 
         JLabel redLabel = new JLabel("Red");
         JLabel blueLabel = new JLabel("Blue");
@@ -239,7 +260,7 @@ public class whiteboardUI extends JFrame implements ActionListener {
         mainPanel = new JPanel();
         mainPanel.setLayout(new GridLayoutManager(2, 4, new Insets(0, 0, 0, 0), -1, -1));
         final JPanel panel1 = new JPanel();
-        panel1.setLayout(new GridLayoutManager(1, 9, new Insets(0, 0, 0, 0), -1, -1));
+        panel1.setLayout(new GridLayoutManager(1, 10, new Insets(0, 0, 0, 0), -1, -1));
         mainPanel.add(panel1, new GridConstraints(0, 0, 1, 4, GridConstraints.ANCHOR_NORTHWEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         btnRectangle = new JButton();
         btnRectangle.setText("Rectangle");
@@ -266,10 +287,13 @@ public class whiteboardUI extends JFrame implements ActionListener {
         toolBar1.add(btnFile);
         btnColor = new JButton();
         btnColor.setText("Color");
-        panel1.add(btnColor, new GridConstraints(0, 7, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        panel1.add(btnColor, new GridConstraints(0, 8, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         rgbShow = new JTextPane();
         rgbShow.setText("Label");
-        panel1.add(rgbShow, new GridConstraints(0, 8, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        panel1.add(rgbShow, new GridConstraints(0, 9, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        btnLineWidth = new JButton();
+        btnLineWidth.setText("Line width");
+        panel1.add(btnLineWidth, new GridConstraints(0, 7, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel2 = new JPanel();
         panel2.setLayout(new GridLayoutManager(2, 1, new Insets(0, 0, 0, 0), -1, -1));
         mainPanel.add(panel2, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
