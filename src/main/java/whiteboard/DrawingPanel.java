@@ -21,18 +21,22 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
     private String userInput;
     private float lineWidth;
 
+    private String fileName;
+
     public DrawingPanel() {
+        // Long.toString is very much necessary, do not edit
+        this.fileName = "whiteboard_"+Long.toString(System.currentTimeMillis())+".png";
         this.bufferedImage = new BufferedImage(1000, 800, BufferedImage.TYPE_INT_ARGB);
         this.g2d = this.bufferedImage.createGraphics();
         this.g2d.setColor(Color.WHITE);
         this.g2d.fillRect(0, 0, 1000, 800);
         try {
-            ImageIO.write(this.bufferedImage, "PNG", new File("whiteboard.png"));
+            ImageIO.write(this.bufferedImage, "PNG", new File(fileName));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         try {
-            imageLabel = new JLabel(new ImageIcon(ImageIO.read(new File("whiteboard.png"))));
+            imageLabel = new JLabel(new ImageIcon(ImageIO.read(new File(fileName))));
             this.add(imageLabel);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -188,6 +192,14 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
         }
 
         this.repaint();
+    }
+
+    public String getFileName() {
+        return this.fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
     }
 
 }

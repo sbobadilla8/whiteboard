@@ -163,8 +163,8 @@ public class whiteboardUI extends JFrame implements ActionListener {
         //create list
         listConnectedUsers.setListData(week);
 
-        try {
-            File myObj = new File("whiteboard.png");
+        /*try {
+            File myObj = new File(this.fileName);
             if (myObj.createNewFile()) {
                 System.out.println("File created: " + myObj.getName());
             } else {
@@ -173,13 +173,17 @@ public class whiteboardUI extends JFrame implements ActionListener {
         } catch (IOException e) {
             System.out.println("An error occurred.");
             e.printStackTrace();
-        }
+        }*/
 
         String drawMode = "Line";
         drawingPanel.setDrawMode(drawMode);
         updateDrawButtonFocus(drawMode);
 
         this.pack();
+    }
+
+    public String getFileName() {
+        return this.drawingPanel.getFileName();
     }
 
     public void updateDrawButtonFocus(String drawMode) {
