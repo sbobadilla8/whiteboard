@@ -77,7 +77,8 @@ public class whiteboardUI extends JFrame implements ActionListener {
 
         JSlider lineWidthSlider = new JSlider();
         lineWidthSlider.setMinimum(0);
-        lineWidthSlider.setMaximum(100);
+        lineWidthSlider.setMaximum(40);
+        lineWidthSlider.setValue((int) this.drawingPanel.getLineWidth());
         lineWidthSlider.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 drawingPanel.setLineWidth(lineWidthSlider.getValue());
@@ -92,6 +93,19 @@ public class whiteboardUI extends JFrame implements ActionListener {
             @Override
             public void mousePressed(MouseEvent e) {
                 lineWidthPopup.show(e.getComponent(), e.getX(), e.getY() + 10);
+            }
+        });
+
+        // Text input
+        JPopupMenu textInputPopup = new JPopupMenu();
+        JPanel textInputPanel = new JPanel();
+
+        textInputPanel.add(this.drawingPanel.getTextInput());
+        textInputPopup.add(textInputPanel);
+
+        btnText.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                textInputPopup.show(e.getComponent(), e.getX(), e.getY() + 10);
             }
         });
 

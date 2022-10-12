@@ -21,9 +21,12 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
     private String userInput;
     private float lineWidth;
 
+    private JTextField textInput;
     private String fileName;
 
     public DrawingPanel() {
+        this.textInput = new JTextField(10);
+        this.lineWidth = (float)10.0;
         // Long.toString is very much necessary, do not edit
         this.fileName = "whiteboard_"+Long.toString(System.currentTimeMillis())+".png";
         this.bufferedImage = new BufferedImage(1000, 800, BufferedImage.TYPE_INT_ARGB);
@@ -56,12 +59,20 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
         this.lineWidth = lineWidth;
     }
 
+    public float getLineWidth(){
+        return this.lineWidth;
+    }
+
     public int getRgbValue() {
         return rgbValue;
     }
 
     public void setRgbValue(int newValue) {
         this.rgbValue = newValue;
+    }
+
+    public JTextField getTextInput(){
+        return this.textInput;
     }
 
     @Override
@@ -73,10 +84,7 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        if (drawMode.equals("Text")) {
-            this.userInput = JOptionPane.showInputDialog("Enter text");
-            draw();
-        }
+        draw();
     }
 
     @Override
@@ -142,9 +150,9 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
         this.g2d.setPaint(new Color(rgbValue));
         this.g2d.setStroke(new BasicStroke(this.lineWidth));
         if (drawMode.equals("Text")) {
-            Font font = new Font("TimesRoman", Font.BOLD, 20);
+            Font font = new Font("TimesRoman", Font.BOLD, (int) this.lineWidth);
             this.g2d.setFont(font);
-            this.g2d.drawString(this.userInput, first.x, first.y);
+            this.g2d.drawString(this.textInput.getText(), first.x, first.y);
         } else if (!first.equals(second)) {
             switch (drawMode) {
                 case "Line":
@@ -178,14 +186,14 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
             }
         }
         try {
-            ImageIO.write(this.bufferedImage, "PNG", new File("whiteboard.png"));
+            ImageIO.write(this.bufferedImage, "PNG", new File(fileName));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         this.remove(imageLabel);
         this.revalidate();
         try {
-            imageLabel = new JLabel(new ImageIcon(ImageIO.read(new File("whiteboard.png"))));
+            imageLabel = new JLabel(new ImageIcon(ImageIO.read(new File(fileName))));
             this.add(imageLabel);
         } catch (IOException e) {
             throw new RuntimeException(e);
