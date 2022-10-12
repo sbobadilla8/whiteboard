@@ -154,62 +154,15 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
 
     //    @Override
     public void draw() {
-        this.g2d.setPaint(new Color(this.rgbValue));
-        this.g2d.setStroke(new BasicStroke(this.lineWidth));
-        if (this.drawMode.equals("Text")) {
-            Font font = new Font("TimesRoman", Font.BOLD, (int) this.lineWidth);
-            this.g2d.setFont(font);
-            this.g2d.drawString(this.textInput.getText(), first.x, first.y);
-        } else if (!first.equals(second)) {
-            switch (drawMode) {
-                case "Line":
-                    this.g2d.drawLine(first.x, first.y, second.x, second.y);
-                    break;
-                case "Rectangle":
-                    int width = Math.abs(second.x - first.x);
-                    int height = Math.abs(second.y - first.y);
-                    Point topLeft = new Point();
-                    topLeft.x = Math.min(first.x, second.x);
-                    topLeft.y = Math.min(first.y, second.y);
-                    this.g2d.drawRect(topLeft.x, topLeft.y, width, height);
-                    break;
-                case "Circle":
-                    width = Math.abs(second.x - first.x);
-                    height = Math.abs(second.y - first.y);
-                    topLeft = new Point();
-                    topLeft.x = Math.min(first.x, second.x);
-                    topLeft.y = Math.min(first.y, second.y);
-                    this.g2d.drawOval(topLeft.x, topLeft.y, width, height);
-                    break;
-                case "Triangle":
-                    int[] xPoints = {first.x, (first.x + second.x) / 2, second.x};
-                    int[] yPoints = {second.y, first.y, second.y};
-
-                    this.g2d.drawPolygon(xPoints, yPoints, 3);
-                    break;
-                case "Free":
-                    this.g2d.drawLine(first.x, first.y, second.x, second.y);
-                    break;
-            }
-        }
-        try {
-            ImageIO.write(this.bufferedImage, "PNG", new File(fileName));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        this.remove(imageLabel);
-        this.revalidate();
-        try {
-            imageLabel = new JLabel(new ImageIcon(ImageIO.read(new File(fileName))));
-            this.add(imageLabel);
-            this.revalidate();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        this.repaint();
+        drawAndSaveCanvas(this.drawMode, this.rgbValue, this.lineWidth, this.first, this.second);
     }
 
-    public void draw(String drawMode,int rgbValue, float lineWidth, Point first, Point second) {
+    public synchronized void draw(String drawMode,int rgbValue, float lineWidth, Point first, Point second) {
+        drawAndSaveCanvas(drawMode, rgbValue, lineWidth, first, second);
+    }
+
+    // Synchronized since multiple whiteboard server threads may access this
+    public synchronized void drawAndSaveCanvas(String drawMode,int rgbValue, float lineWidth, Point first, Point second) {
         // TODO: add textInput param
         this.g2d.setPaint(new Color(rgbValue));
         this.g2d.setStroke(new BasicStroke(lineWidth));
