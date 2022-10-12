@@ -6,12 +6,13 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import server.WhiteboardServer;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,9 +29,20 @@ public class JoinWhiteboard {
             output.writeUTF(connectionRequest.toJSONString());
             output.flush();
             // Read hello from server.
-            String message = input.readUTF();
-            System.out.println(message);
-            Thread.sleep(6000);
+            byte[] sizeArr = new byte[4];
+            input.read(sizeArr);
+            int size = ByteBuffer.wrap(sizeArr).asIntBuffer().get();
+
+            byte[] imageArr = new byte[size];
+            input.read(imageArr);
+            BufferedImage initialImage = ImageIO.read(new ByteArrayInputStream(imageArr));
+            ImageIO.write(initialImage, "png", new File("Remote_Whiteboard.png"));
+
+            whiteboardUI frame = new whiteboardUI("Whiteboard", false);
+            frame.setVisible(true);
+            //String message = input.readUTF();
+            //System.out.println(message);
+            /*Thread.sleep(6000);
             JSONObject drawCommand = new JSONObject();
             drawCommand.put("paint-color", 6556410);
             drawCommand.put("line-width", 20);
@@ -49,7 +61,7 @@ public class JoinWhiteboard {
             drawCommand.put("second-point", pointsMap2);
 
             output.writeUTF(drawCommand.toJSONString());
-            output.flush();
+            /*output.flush();
             JSONParser parser = new JSONParser();
             JSONObject res = (JSONObject) parser.parse(input.readUTF());
             System.out.println("Received from server: " + res.get("result"));
@@ -57,12 +69,13 @@ public class JoinWhiteboard {
             goodbyeCommand.put("command_name", "Math");
             goodbyeCommand.put("method_name", "client_remove");
             output.writeUTF(goodbyeCommand.toJSONString());
-            output.flush();
+            output.flush();*/
             client.close();
-        } catch (IOException | ParseException e) {
+
+        } catch (IOException /*| ParseException*/ e) {
             throw new RuntimeException(e);
-        } catch (InterruptedException e) {
+        } /*catch (InterruptedException e) {
             throw new RuntimeException(e);
-        }
+        }*/
     }
 }

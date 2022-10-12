@@ -1,5 +1,6 @@
 package whiteboard;
 
+import server.ChatServer;
 import server.WhiteboardServer;
 
 import javax.swing.*;
@@ -9,7 +10,7 @@ import java.net.InetSocketAddress;
 
 public class CreateWhiteboard {
     public static void main (String[] args) {
-        whiteboardUI frame = new whiteboardUI("Whiteboard");
+        whiteboardUI frame = new whiteboardUI("Whiteboard (Administrator)", true);
         // Cursed casting
         String fileName = frame.getFileName();
         frame.setVisible(true);
@@ -19,6 +20,7 @@ public class CreateWhiteboard {
         }*/
         try {
             WhiteboardServer whiteboardServer = new WhiteboardServer(fileName, frame.getDrawingPanel());
+            ChatServer chatServer = new ChatServer();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

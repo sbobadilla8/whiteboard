@@ -23,22 +23,32 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
     private JTextField textInput;
     private String fileName;
 
-    public DrawingPanel() {
+    private Boolean isAdmin;
+
+    public DrawingPanel(Boolean isAdmin) {
+        this.isAdmin = isAdmin;
         this.textInput = new JTextField(10);
         this.lineWidth = (float) 10.0;
-        // Long.toString is very much necessary, do not edit
-        this.fileName = "whiteboard_" + Long.toString(System.currentTimeMillis()) + ".png";
-        this.bufferedImage = new BufferedImage(1000, 800, BufferedImage.TYPE_INT_ARGB);
-        this.g2d = this.bufferedImage.createGraphics();
-        this.g2d.setColor(Color.WHITE);
-        this.g2d.fillRect(0, 0, 1000, 800);
-        try {
-            ImageIO.write(this.bufferedImage, "PNG", new File(fileName));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        if (!this.isAdmin) {
+            // TODO: Get file name from the admin server
+            this.fileName = "Remote_Whiteboard.png";
+            try {
+                this.bufferedImage = ImageIO.read(new File(this.fileName));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            this.g2d = this.bufferedImage.createGraphics();
+        } else {
+            // Long.toString is very much necessary, do not edit
+            this.fileName = "whiteboard_" + Long.toString(System.currentTimeMillis()) + ".png";
+            this.bufferedImage = new BufferedImage(1000, 800, BufferedImage.TYPE_INT_ARGB);
+            this.g2d = this.bufferedImage.createGraphics();
+            this.g2d.setColor(Color.WHITE);
+            this.g2d.fillRect(0, 0, 1000, 800);
         }
         try {
-            imageLabel = new JLabel(new ImageIcon(ImageIO.read(new File(fileName))));
+            ImageIO.write(this.bufferedImage, "PNG", new File(this.fileName));
+            imageLabel = new JLabel(new ImageIcon(ImageIO.read(new File(this.fileName))));
             this.add(imageLabel);
         } catch (IOException e) {
             throw new RuntimeException(e);

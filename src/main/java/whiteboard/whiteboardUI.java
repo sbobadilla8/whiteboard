@@ -32,13 +32,13 @@ public class whiteboardUI extends JFrame implements ActionListener {
     private DrawingPanel drawingPanel;
 
 
-    public whiteboardUI(String title) {
+    public whiteboardUI(String title, Boolean isAdmin) {
 
         super(title);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setPreferredSize(new Dimension(1400, 900));
         this.setContentPane(mainPanel);
-        this.drawingPanel = new DrawingPanel();
+        this.drawingPanel = new DrawingPanel(isAdmin);
         this.drawingPanelContainer.add(drawingPanel);
 
         final JPopupMenu filePopup = new JPopupMenu();
