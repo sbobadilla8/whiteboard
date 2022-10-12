@@ -84,14 +84,6 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
         return this.textInput;
     }
 
-    public void setFirstLocation(int x, int y) {
-        this.first.setLocation(x, y);
-    }
-
-    public void setSecondLocation(int x, int y) {
-        this.second.setLocation(x, y);
-    }
-
     @Override
     public void actionPerformed(ActionEvent e) {
         drawMode = e.getActionCommand();
