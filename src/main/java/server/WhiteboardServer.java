@@ -3,9 +3,12 @@ package server;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import whiteboard.DrawingPanel;
 
 import javax.imageio.ImageIO;
 import javax.net.ServerSocketFactory;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -22,16 +25,21 @@ public class WhiteboardServer {
     private ConcurrentHashMap<String, Socket> clientList;
 
     private String fileName;
-    public WhiteboardServer(int port, String fileName) throws IOException {
+
+    private DrawingPanel whiteboard;
+
+
+    public WhiteboardServer(String fileName, DrawingPanel whiteboard) throws IOException {
         this.clientList = new ConcurrentHashMap<>();
         this.fileName = fileName;
+        this.whiteboard = whiteboard;
         ServerSocketFactory factory = ServerSocketFactory.getDefault();
-        try{
-            this.whiteboardSocket = factory.createServerSocket(port);
+        try {
+            this.whiteboardSocket = factory.createServerSocket(3000);
             System.out.println("Server initialized, waiting for client connection...");
 
             // Wait for connections.
-            while(true){
+            while (true) {
                 Socket client = whiteboardSocket.accept();
                 client.setKeepAlive(true);
                 System.out.println("Client applying for connection!");
@@ -50,8 +58,7 @@ public class WhiteboardServer {
     }
 
     public void serveClient(Socket client) {
-        try(Socket clientSocket = client)
-        {
+        try (Socket clientSocket = client) {
 
             // The JSON Parser
             JSONParser parser = new JSONParser();
@@ -62,19 +69,19 @@ public class WhiteboardServer {
 
             String clientName = readMessage(input);
             this.clientList.put(clientName, client);
-            System.out.println("CLIENT: "+clientName);
+            System.out.println("CLIENT: " + clientName);
 
-            output.writeUTF("Successfully added peer: "+ clientName);
+            output.writeUTF("Successfully added peer: " + clientName);
 
             Boolean isPeerTerminated = false;
             // Receive more data..
-            while(!isPeerTerminated){
-                if(input.available() > 0){
+            while (!isPeerTerminated) {
+                if (input.available() > 0) {
                     isPeerTerminated = parseCommand(input, output);
                 }
             }
-            System.out.println("Terminating client connection: "+ clientName);
-            this.clientList.remove(clientName);
+//            System.out.println("Terminating client connection: " + clientName);
+//            this.clientList.remove(clientName);
         } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
@@ -85,80 +92,84 @@ public class WhiteboardServer {
         JSONParser parser = new JSONParser();
         // Attempt to convert read data to JSON
         JSONObject command = (JSONObject) parser.parse(readMessage(input));
-        System.out.println("COMMAND RECEIVED: "+command.toJSONString());
+        System.out.println("COMMAND RECEIVED: " + command.toJSONString());
 
         int result = 0;
+        String drawMode = command.get("draw-mode").toString();
+        int rgbValue = Integer.parseInt(command.get("paint-color").toString());
+        float lineWidth = Float.parseFloat(command.get("line-width").toString());
+        String firstPoints = command.get("first-point").toString();
+        JSONObject firstPoint = (JSONObject) parser.parse(firstPoints);
+        int x1 = Integer.parseInt(firstPoint.get("x").toString());
+        int y1 = Integer.parseInt(firstPoint.get("y").toString());
+        Point first = new Point(x1, y1);
+        String secondPoints = command.get("second-point").toString();
+        JSONObject secondPoint = (JSONObject) parser.parse(secondPoints);
+        int x2 = Integer.parseInt(secondPoint.get("x").toString());
+        int y2 = Integer.parseInt(secondPoint.get("y").toString());
+        Point second = new Point(x2, y2);
+        this.whiteboard.draw(drawMode, rgbValue,  lineWidth,  first,  second);
 
-        if(command.containsKey("command_name")){
-            System.out.println("IT HAS A COMMAND NAME");
-        }
 
-        if (command.get("command_name").equals("Math"))
-        {
-            //Math math = new Math();
-            //Integer firstInt = Integer.parseInt(command.get("first_integer").toString());
-            //Integer secondInt = Integer.parseInt(command.get("second_integer").toString());
-
-            switch((String) command.get("method_name"))
-            {
-                case "client_join":
-                    System.out.println("Server parsing client_join request");
-                    // TODO: Implement sharing of image file to new client
-                    //result = math.add(firstInt,secondInt);
-                    break;
-                case "whiteboard_line":
-                    System.out.println("Server parsing whiteboard_line request");
-                    //result = math.multiply(firstInt,secondInt);
-                    // gets from peer
-                    // multicast
-                    break;
-                case "whiteboard_rectangle":
-                    System.out.println("Server parsing whiteboard_rectangle request");
-                    //result = math.multiply(firstInt,secondInt);
-                    // gets from peer
-                    // multicast
-                    break;
-                case "whiteboard_circle":
-                    System.out.println("Server parsing whiteboard_circle request");
-                    //result = math.multiply(firstInt,secondInt);
-                    // gets from peer
-                    // multicast
-                    break;
-                case "whiteboard_triangle":
-                    System.out.println("Server parsing whiteboard_triangle request");
-                    //result = math.multiply(firstInt,secondInt);
-                    // gets from peer
-                    // multicast
-                    break;
-                case "whiteboard_freehand":
-                    System.out.println("Server parsing whiteboard_freehand request");
-                    //result = math.multiply(firstInt,secondInt);
-                    // gets from peer
-                    // multicast
-                    break;
-                case "whiteboard_text":
-                    System.out.println("Server parsing whiteboard_text request");
-                    //result = math.multiply(firstInt,secondInt);
-                    // gets from peer
-                    // multicast
-                    break;
-                case "client_remove":
-                    System.out.println("Server parsing client_remove request");
-                    return true;
-                default:
-                    try
-                    {
-                        throw new Exception();
-                    } catch (Exception e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-            }
-            JSONObject resObj = new JSONObject();
-            resObj.put("result", result);
-
-            writeMessage(output, resObj.toJSONString());
-        }
+//        if (command.get("command_name").equals("Math")) {
+//            switch ((String) command.get("method_name")) {
+//                case "client_join":
+//                    System.out.println("Server parsing client_join request");
+//                    // TODO: Implement sharing of image file to new client
+//                    //result = math.add(firstInt,secondInt);
+//                    break;
+//                case "whiteboard_line":
+//                    System.out.println("Server parsing whiteboard_line request");
+//                    //result = math.multiply(firstInt,secondInt);
+//                    // gets from peer
+//                    // multicast
+//                    break;
+//                case "whiteboard_rectangle":
+//                    System.out.println("Server parsing whiteboard_rectangle request");
+//                    //result = math.multiply(firstInt,secondInt);
+//                    // gets from peer
+//                    // multicast
+//                    break;
+//                case "whiteboard_circle":
+//                    System.out.println("Server parsing whiteboard_circle request");
+//                    //result = math.multiply(firstInt,secondInt);
+//                    // gets from peer
+//                    // multicast
+//                    break;
+//                case "whiteboard_triangle":
+//                    System.out.println("Server parsing whiteboard_triangle request");
+//                    //result = math.multiply(firstInt,secondInt);
+//                    // gets from peer
+//                    // multicast
+//                    break;
+//                case "whiteboard_freehand":
+//                    System.out.println("Server parsing whiteboard_freehand request");
+//                    //result = math.multiply(firstInt,secondInt);
+//                    // gets from peer
+//                    // multicast
+//                    break;
+//                case "whiteboard_text":
+//                    System.out.println("Server parsing whiteboard_text request");
+//                    //result = math.multiply(firstInt,secondInt);
+//                    // gets from peer
+//                    // multicast
+//                    break;
+//                case "client_remove":
+//                    System.out.println("Server parsing client_remove request");
+//                    return true;
+//                default:
+//                    try {
+//                        throw new Exception();
+//                    } catch (Exception e) {
+//                        // TODO Auto-generated catch block
+//                        e.printStackTrace();
+//                    }
+//            }
+//            JSONObject resObj = new JSONObject();
+//            resObj.put("result", result);
+//
+//            writeMessage(output, resObj.toJSONString());
+//        }
         // TODO Auto-generated method stub
         return false;
     }

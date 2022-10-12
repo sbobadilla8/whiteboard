@@ -200,6 +200,10 @@ public class whiteboardUI extends JFrame implements ActionListener {
         return this.drawingPanel.getFileName();
     }
 
+    public DrawingPanel getDrawingPanel() {
+        return this.drawingPanel;
+    }
+
     public void updateDrawButtonFocus(String drawMode) {
         switch (drawMode) {
             case "Line":
