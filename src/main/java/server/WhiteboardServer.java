@@ -10,13 +10,11 @@ import javax.net.ServerSocketFactory;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class WhiteboardServer {
@@ -38,16 +36,26 @@ public class WhiteboardServer {
             this.whiteboardSocket = factory.createServerSocket(3000);
             System.out.println("Server initialized, waiting for client connection...");
 
-            // Wait for connections.
-            while (true) {
-                Socket client = whiteboardSocket.accept();
-                client.setKeepAlive(true);
-                System.out.println("Client applying for connection!");
+            // Extremely cursed / 10
+            new Thread(() -> {
+                // Wait for connections.
+                while(true){
+                    Socket client = null;
+                    try {
+                        client = whiteboardSocket.accept();
+                        client.setKeepAlive(true);
+                        System.out.println("Client applying for connection!");
 
-                // Start a new thread for a connection
-                Thread t = new Thread(() -> serveClient(client));
-                t.start();
-            }
+                        // Start a new thread for a connection
+                        Socket finalClient = client;
+                        Thread t = new Thread(() -> serveClient(finalClient));
+                        t.start();
+                    }
+                    catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }).start();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -71,7 +79,18 @@ public class WhiteboardServer {
             this.clientList.put(clientName, client);
             System.out.println("CLIENT: " + clientName);
 
-            output.writeUTF("Successfully added peer: " + clientName);
+            // The welcome message consists of two parts - the first is the initial canvas size, the second is the canvas png
+            BufferedImage image = ImageIO.read(new File(this.whiteboard.getFileName()));
+
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            ImageIO.write(image, "png", byteArrayOutputStream);
+
+            byte[] size = ByteBuffer.allocate(4).putInt(byteArrayOutputStream.size()).array();
+            output.write(size);
+            output.write(byteArrayOutputStream.toByteArray());
+            output.flush();
+
+            //output.writeUTF("Successfully added peer: " + clientName);
 
             Boolean isPeerTerminated = false;
             // Receive more data..
