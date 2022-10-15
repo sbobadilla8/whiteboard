@@ -39,19 +39,18 @@ public class WhiteboardServer {
             // Extremely cursed / 10
             new Thread(() -> {
                 // Wait for connections.
-                while(true){
+                while (true) {
                     Socket client = null;
                     try {
                         client = whiteboardSocket.accept();
                         client.setKeepAlive(true);
                         System.out.println("Client applying for connection!");
-
+                        // TODO: approval of new connections
                         // Start a new thread for a connection
                         Socket finalClient = client;
                         Thread t = new Thread(() -> serveClient(finalClient));
                         t.start();
-                    }
-                    catch (IOException e) {
+                    } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                 }
@@ -61,18 +60,10 @@ public class WhiteboardServer {
         }
     }
 
-    public BufferedImage getImage(String fileName) throws IOException {
-        return ImageIO.read(new File(fileName));
-    }
-
     public void serveClient(Socket client) {
         try (Socket clientSocket = client) {
-
-            // The JSON Parser
             JSONParser parser = new JSONParser();
-            // Input stream
             DataInputStream input = new DataInputStream(clientSocket.getInputStream());
-            // Output Stream
             DataOutputStream output = new DataOutputStream(clientSocket.getOutputStream());
 
             String clientName = readMessage(input);
@@ -90,15 +81,14 @@ public class WhiteboardServer {
             output.write(byteArrayOutputStream.toByteArray());
             output.flush();
 
-            //output.writeUTF("Successfully added peer: " + clientName);
-
-            Boolean isPeerTerminated = false;
-            // Receive more data..
+            boolean isPeerTerminated = false;
+            // Listen to drawing commands
             while (!isPeerTerminated) {
                 if (input.available() > 0) {
-                    isPeerTerminated = parseCommand(input, output);
+                    isPeerTerminated = parseCommand(input);
                 }
             }
+            // TODO: kick clients from server
 //            System.out.println("Terminating client connection: " + clientName);
 //            this.clientList.remove(clientName);
         } catch (IOException | ParseException e) {
@@ -106,14 +96,14 @@ public class WhiteboardServer {
         }
     }
 
-    private Boolean parseCommand(DataInputStream input, DataOutputStream output) throws IOException, ParseException {
+    private Boolean parseCommand(DataInputStream input) throws IOException, ParseException {
         // The JSON Parser
         JSONParser parser = new JSONParser();
         // Attempt to convert read data to JSON
         JSONObject command = (JSONObject) parser.parse(readMessage(input));
-        System.out.println("COMMAND RECEIVED: " + command.toJSONString());
 
         int result = 0;
+        String username = command.get("username").toString();
         String drawMode = command.get("draw-mode").toString();
         int rgbValue = Integer.parseInt(command.get("paint-color").toString());
         float lineWidth = Float.parseFloat(command.get("line-width").toString());
@@ -128,9 +118,35 @@ public class WhiteboardServer {
         int y2 = Integer.parseInt(secondPoint.get("y").toString());
         Point second = new Point(x2, y2);
         String textInput = command.get("text-input").toString();
-        this.whiteboard.draw(drawMode, rgbValue,  lineWidth,  first,  second, textInput);
+        this.whiteboard.draw(drawMode, rgbValue, lineWidth, first, second, textInput);
+
+        this.clientList.forEach((user, conn) -> {
+            if (!user.equals(username)) {
+                try {
+                    DataOutputStream output = new DataOutputStream(conn.getOutputStream());
+                    output.writeUTF(command.toJSONString());
+                    output.flush();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
 
         return false;
+    }
+
+    public void multicastDrawing(JSONObject drawingCommand) {
+        this.clientList.forEach((user, conn) -> {
+            if (!drawingCommand.containsKey("username")) {
+                try {
+                    DataOutputStream output = new DataOutputStream(conn.getOutputStream());
+                    output.writeUTF(drawingCommand.toJSONString());
+                    output.flush();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
     }
 
     public String readMessage(DataInputStream input) throws IOException {

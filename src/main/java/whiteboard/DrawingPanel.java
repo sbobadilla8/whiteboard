@@ -3,6 +3,7 @@ package whiteboard;
 import client.Connection;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import server.WhiteboardServer;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -29,6 +30,7 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
     private String fileName;
     private Boolean isAdmin;
     private Connection connection;
+    private WhiteboardServer server;
 
     public DrawingPanel(Boolean isAdmin, Connection conn) {
         this.isAdmin = isAdmin;
@@ -64,6 +66,10 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
         addMouseMotionListener(this);
 
 //        this.setVisible(true);
+    }
+
+    public void setServer(WhiteboardServer server){
+        this.server = server;
     }
 
     public void setDrawMode(String drawMode) {
@@ -162,20 +168,21 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
 
     //    @Override
     public void draw() {
+        JSONObject drawCommand = new JSONObject();
+        drawCommand.put("paint-color", this.rgbValue);
+        drawCommand.put("line-width", this.lineWidth);
+        drawCommand.put("draw-mode", this.drawMode);
+        Map<String, Integer> firstMap = new HashMap<>();
+        Map<String, Integer> secondMap = new HashMap<>();
+        firstMap.put("x", this.first.x);
+        firstMap.put("y", this.first.y);
+        drawCommand.put("first-point", firstMap);
+        secondMap.put("x", this.second.x);
+        secondMap.put("y", this.second.y);
+        drawCommand.put("second-point", secondMap);
+        drawCommand.put("text-input", this.textInput.getText());
         if (!isAdmin) {
-            JSONObject drawCommand = new JSONObject();
-            drawCommand.put("paint-color", this.rgbValue);
-            drawCommand.put("line-width", this.lineWidth);
-            drawCommand.put("draw-mode", this.drawMode);
-            Map<String, Integer> firstMap = new HashMap<>();
-            Map<String, Integer> secondMap = new HashMap<>();
-            firstMap.put("x", this.first.x);
-            firstMap.put("y", this.first.y);
-            drawCommand.put("first-point", firstMap);
-            secondMap.put("x", this.second.x);
-            secondMap.put("y", this.second.y);
-            drawCommand.put("second-point", secondMap);
-            drawCommand.put("text-input", this.textInput.getText());
+            drawCommand.put("username", this.connection.getUsername());
             try {
                 connection.output.writeUTF(drawCommand.toJSONString());
                 connection.output.flush();
@@ -183,8 +190,10 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
                 JOptionPane.showMessageDialog(this, "Error while writing input to server");
             }
             drawAndSaveCanvas(this.drawMode, this.rgbValue, this.lineWidth, this.first, this.second, this.textInput.getText());
+        } else {
+            drawAndSaveCanvas(this.drawMode, this.rgbValue, this.lineWidth, this.first, this.second, this.textInput.getText());
+            this.server.multicastDrawing(drawCommand);
         }
-        drawAndSaveCanvas(this.drawMode, this.rgbValue, this.lineWidth, this.first, this.second, this.textInput.getText());
     }
 
     public synchronized void draw(String drawMode, int rgbValue, float lineWidth, Point first, Point second, String textInput) {

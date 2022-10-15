@@ -6,14 +6,10 @@ import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
-import java.io.IOException;
 
-public class whiteboardUI extends JFrame implements ActionListener {
+public class WhiteboardUI extends JFrame implements ActionListener {
     private JPanel mainPanel;
     private JButton btnLine;
     private JButton btnRectangle;
@@ -33,7 +29,7 @@ public class whiteboardUI extends JFrame implements ActionListener {
     private DrawingPanel drawingPanel;
 
 
-    public whiteboardUI(String title, Boolean isAdmin, Connection conn) {
+    public WhiteboardUI(String title, Boolean isAdmin, Connection conn) {
 
         super(title);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

@@ -2,16 +2,13 @@ package client;
 
 import server.ChatServer;
 import server.WhiteboardServer;
-import whiteboard.whiteboardUI;
+import whiteboard.WhiteboardUI;
 
-import javax.swing.*;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 
 public class CreateWhiteboard {
     public static void main (String[] args) {
-        whiteboardUI frame = new whiteboardUI("Whiteboard (Administrator)", true, null);
+        WhiteboardUI frame = new WhiteboardUI("Whiteboard (Administrator)", true, null);
         // Cursed casting
         String fileName = frame.getFileName();
         frame.setVisible(true);
@@ -21,6 +18,7 @@ public class CreateWhiteboard {
         }*/
         try {
             WhiteboardServer whiteboardServer = new WhiteboardServer(fileName, frame.getDrawingPanel());
+            frame.getDrawingPanel().setServer(whiteboardServer);
             ChatServer chatServer = new ChatServer();
         } catch (IOException e) {
             throw new RuntimeException(e);

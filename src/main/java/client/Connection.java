@@ -7,10 +7,11 @@ import java.net.InetAddress;
 import java.net.Socket;
 
 public class Connection {
-    private Socket socket;
+    public Socket socket;
     public DataInputStream input;
     public DataOutputStream output;
     private String filename;
+    private String username;
 
     public Connection(String address, int port) throws IOException {
         this.socket = new Socket(address, port);
@@ -29,4 +30,13 @@ public class Connection {
     public void setFilename(String filename) {
         this.filename = filename;
     }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
 }
