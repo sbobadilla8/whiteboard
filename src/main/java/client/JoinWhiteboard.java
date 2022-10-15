@@ -1,10 +1,12 @@
-package whiteboard;
+package client;
 
+import client.Connection;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import server.WhiteboardServer;
+import whiteboard.whiteboardUI;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -18,27 +20,26 @@ import java.util.Map;
 
 public class JoinWhiteboard {
     public static void main (String[] args) {
-        Socket client;
         try {
-            client = new Socket("localhost", 3000);
-            DataInputStream input = new DataInputStream(client.getInputStream());
-            DataOutputStream output = new DataOutputStream(client.getOutputStream());
-
+            Connection conn = new Connection("localhost", 3000);
+//            client = new Socket("localhost", 3000);
+//            DataInputStream input = new DataInputStream(client.getInputStream());
+//            DataOutputStream output = new DataOutputStream(client.getOutputStream());
             JSONObject connectionRequest = new JSONObject();
             connectionRequest.put("client-name", "Username1");
-            output.writeUTF(connectionRequest.toJSONString());
-            output.flush();
+            conn.output.writeUTF(connectionRequest.toJSONString());
+            conn.output.flush();
             // Read hello from server.
             byte[] sizeArr = new byte[4];
-            input.read(sizeArr);
+            conn.input.read(sizeArr);
             int size = ByteBuffer.wrap(sizeArr).asIntBuffer().get();
 
             byte[] imageArr = new byte[size];
-            input.read(imageArr);
+            conn.input.read(imageArr);
             BufferedImage initialImage = ImageIO.read(new ByteArrayInputStream(imageArr));
-            ImageIO.write(initialImage, "png", new File("Remote_Whiteboard.png"));
-
-            whiteboardUI frame = new whiteboardUI("Whiteboard", false);
+            conn.setFilename("remoteWhiteboard.png");
+            ImageIO.write(initialImage, "png", new File(conn.getFilename()));
+            whiteboardUI frame = new whiteboardUI("Whiteboard Client", false, conn);
             frame.setVisible(true);
             //String message = input.readUTF();
             //System.out.println(message);
@@ -70,7 +71,7 @@ public class JoinWhiteboard {
             goodbyeCommand.put("method_name", "client_remove");
             output.writeUTF(goodbyeCommand.toJSONString());
             output.flush();*/
-            client.close();
+//            conn.close();
 
         } catch (IOException /*| ParseException*/ e) {
             throw new RuntimeException(e);

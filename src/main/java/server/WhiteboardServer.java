@@ -127,69 +127,9 @@ public class WhiteboardServer {
         int x2 = Integer.parseInt(secondPoint.get("x").toString());
         int y2 = Integer.parseInt(secondPoint.get("y").toString());
         Point second = new Point(x2, y2);
-        this.whiteboard.draw(drawMode, rgbValue,  lineWidth,  first,  second);
+        String textInput = command.get("text-input").toString();
+        this.whiteboard.draw(drawMode, rgbValue,  lineWidth,  first,  second, textInput);
 
-
-//        if (command.get("command_name").equals("Math")) {
-//            switch ((String) command.get("method_name")) {
-//                case "client_join":
-//                    System.out.println("Server parsing client_join request");
-//                    // TODO: Implement sharing of image file to new client
-//                    //result = math.add(firstInt,secondInt);
-//                    break;
-//                case "whiteboard_line":
-//                    System.out.println("Server parsing whiteboard_line request");
-//                    //result = math.multiply(firstInt,secondInt);
-//                    // gets from peer
-//                    // multicast
-//                    break;
-//                case "whiteboard_rectangle":
-//                    System.out.println("Server parsing whiteboard_rectangle request");
-//                    //result = math.multiply(firstInt,secondInt);
-//                    // gets from peer
-//                    // multicast
-//                    break;
-//                case "whiteboard_circle":
-//                    System.out.println("Server parsing whiteboard_circle request");
-//                    //result = math.multiply(firstInt,secondInt);
-//                    // gets from peer
-//                    // multicast
-//                    break;
-//                case "whiteboard_triangle":
-//                    System.out.println("Server parsing whiteboard_triangle request");
-//                    //result = math.multiply(firstInt,secondInt);
-//                    // gets from peer
-//                    // multicast
-//                    break;
-//                case "whiteboard_freehand":
-//                    System.out.println("Server parsing whiteboard_freehand request");
-//                    //result = math.multiply(firstInt,secondInt);
-//                    // gets from peer
-//                    // multicast
-//                    break;
-//                case "whiteboard_text":
-//                    System.out.println("Server parsing whiteboard_text request");
-//                    //result = math.multiply(firstInt,secondInt);
-//                    // gets from peer
-//                    // multicast
-//                    break;
-//                case "client_remove":
-//                    System.out.println("Server parsing client_remove request");
-//                    return true;
-//                default:
-//                    try {
-//                        throw new Exception();
-//                    } catch (Exception e) {
-//                        // TODO Auto-generated catch block
-//                        e.printStackTrace();
-//                    }
-//            }
-//            JSONObject resObj = new JSONObject();
-//            resObj.put("result", result);
-//
-//            writeMessage(output, resObj.toJSONString());
-//        }
-        // TODO Auto-generated method stub
         return false;
     }
 

@@ -1,7 +1,8 @@
-package whiteboard;
+package client;
 
 import server.ChatServer;
 import server.WhiteboardServer;
+import whiteboard.whiteboardUI;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -10,7 +11,7 @@ import java.net.InetSocketAddress;
 
 public class CreateWhiteboard {
     public static void main (String[] args) {
-        whiteboardUI frame = new whiteboardUI("Whiteboard (Administrator)", true);
+        whiteboardUI frame = new whiteboardUI("Whiteboard (Administrator)", true, null);
         // Cursed casting
         String fileName = frame.getFileName();
         frame.setVisible(true);

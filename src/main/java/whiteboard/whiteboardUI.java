@@ -1,5 +1,6 @@
 package whiteboard;
 
+import client.Connection;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
@@ -32,13 +33,13 @@ public class whiteboardUI extends JFrame implements ActionListener {
     private DrawingPanel drawingPanel;
 
 
-    public whiteboardUI(String title, Boolean isAdmin) {
+    public whiteboardUI(String title, Boolean isAdmin, Connection conn) {
 
         super(title);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setPreferredSize(new Dimension(1400, 900));
         this.setContentPane(mainPanel);
-        this.drawingPanel = new DrawingPanel(isAdmin);
+        this.drawingPanel = new DrawingPanel(isAdmin, conn);
         this.drawingPanelContainer.add(drawingPanel);
 
         final JPopupMenu filePopup = new JPopupMenu();
@@ -79,11 +80,7 @@ public class whiteboardUI extends JFrame implements ActionListener {
         lineWidthSlider.setMinimum(0);
         lineWidthSlider.setMaximum(40);
         lineWidthSlider.setValue((int) this.drawingPanel.getLineWidth());
-        lineWidthSlider.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                drawingPanel.setLineWidth(lineWidthSlider.getValue());
-            }
-        });
+        lineWidthSlider.addChangeListener(e -> drawingPanel.setLineWidth(lineWidthSlider.getValue()));
         JPanel lineWidthPanel = new JPanel();
         lineWidthPanel.add(lineWidthSlider);
 
@@ -126,28 +123,22 @@ public class whiteboardUI extends JFrame implements ActionListener {
 
         rgbShow.setForeground(new Color(this.drawingPanel.getRgbValue()));
         rgbShow.setBackground(new Color(this.drawingPanel.getRgbValue()));
-        redSlider.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                drawingPanel.setRgbValue(new Color(redSlider.getValue(), greenSlider.getValue(), blueSlider.getValue()).getRGB());
-                rgbShow.setForeground(new Color(drawingPanel.getRgbValue()));
-                rgbShow.setBackground(new Color(drawingPanel.getRgbValue()));
-            }
+        redSlider.addChangeListener(e -> {
+            drawingPanel.setRgbValue(new Color(redSlider.getValue(), greenSlider.getValue(), blueSlider.getValue()).getRGB());
+            rgbShow.setForeground(new Color(drawingPanel.getRgbValue()));
+            rgbShow.setBackground(new Color(drawingPanel.getRgbValue()));
         });
 
-        blueSlider.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                drawingPanel.setRgbValue(new Color(redSlider.getValue(), greenSlider.getValue(), blueSlider.getValue()).getRGB());
-                rgbShow.setForeground(new Color(drawingPanel.getRgbValue()));
-                rgbShow.setBackground(new Color(drawingPanel.getRgbValue()));
-            }
+        blueSlider.addChangeListener(e -> {
+            drawingPanel.setRgbValue(new Color(redSlider.getValue(), greenSlider.getValue(), blueSlider.getValue()).getRGB());
+            rgbShow.setForeground(new Color(drawingPanel.getRgbValue()));
+            rgbShow.setBackground(new Color(drawingPanel.getRgbValue()));
         });
 
-        greenSlider.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                drawingPanel.setRgbValue(new Color(redSlider.getValue(), greenSlider.getValue(), blueSlider.getValue()).getRGB());
-                rgbShow.setForeground(new Color(drawingPanel.getRgbValue()));
-                rgbShow.setBackground(new Color(drawingPanel.getRgbValue()));
-            }
+        greenSlider.addChangeListener(e -> {
+            drawingPanel.setRgbValue(new Color(redSlider.getValue(), greenSlider.getValue(), blueSlider.getValue()).getRGB());
+            rgbShow.setForeground(new Color(drawingPanel.getRgbValue()));
+            rgbShow.setBackground(new Color(drawingPanel.getRgbValue()));
         });
 
         JPanel red = new JPanel();

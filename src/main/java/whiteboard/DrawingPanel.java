@@ -1,5 +1,9 @@
 package whiteboard;
 
+import client.Connection;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -8,6 +12,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DrawingPanel extends JPanel implements ActionListener, MouseListener, MouseMotionListener, KeyListener {
 
@@ -19,19 +25,18 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
     private JLabel imageLabel;
     private int rgbValue;
     private float lineWidth;
-
     private JTextField textInput;
     private String fileName;
-
     private Boolean isAdmin;
+    private Connection connection;
 
-    public DrawingPanel(Boolean isAdmin) {
+    public DrawingPanel(Boolean isAdmin, Connection conn) {
         this.isAdmin = isAdmin;
         this.textInput = new JTextField(10);
         this.lineWidth = (float) 10.0;
         if (!this.isAdmin) {
-            // TODO: Get file name from the admin server
-            this.fileName = "Remote_Whiteboard.png";
+            this.connection = conn;
+            this.fileName = conn.getFilename();
             try {
                 this.bufferedImage = ImageIO.read(new File(this.fileName));
             } catch (IOException e) {
@@ -39,7 +44,8 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
             }
             this.g2d = this.bufferedImage.createGraphics();
         } else {
-            // Long.toString is very much necessary, do not edit
+            this.connection = null;
+            // Long.toString is very much necessary, do not remove
             this.fileName = "whiteboard_" + Long.toString(System.currentTimeMillis()) + ".png";
             this.bufferedImage = new BufferedImage(1000, 800, BufferedImage.TYPE_INT_ARGB);
             this.g2d = this.bufferedImage.createGraphics();
@@ -156,22 +162,43 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
 
     //    @Override
     public void draw() {
-        drawAndSaveCanvas(this.drawMode, this.rgbValue, this.lineWidth, this.first, this.second);
+        if (!isAdmin) {
+            JSONObject drawCommand = new JSONObject();
+            drawCommand.put("paint-color", this.rgbValue);
+            drawCommand.put("line-width", this.lineWidth);
+            drawCommand.put("draw-mode", this.drawMode);
+            Map<String, Integer> firstMap = new HashMap<>();
+            Map<String, Integer> secondMap = new HashMap<>();
+            firstMap.put("x", this.first.x);
+            firstMap.put("y", this.first.y);
+            drawCommand.put("first-point", firstMap);
+            secondMap.put("x", this.second.x);
+            secondMap.put("y", this.second.y);
+            drawCommand.put("second-point", secondMap);
+            drawCommand.put("text-input", this.textInput.getText());
+            try {
+                connection.output.writeUTF(drawCommand.toJSONString());
+                connection.output.flush();
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(this, "Error while writing input to server");
+            }
+            drawAndSaveCanvas(this.drawMode, this.rgbValue, this.lineWidth, this.first, this.second, this.textInput.getText());
+        }
+        drawAndSaveCanvas(this.drawMode, this.rgbValue, this.lineWidth, this.first, this.second, this.textInput.getText());
     }
 
-    public synchronized void draw(String drawMode,int rgbValue, float lineWidth, Point first, Point second) {
-        drawAndSaveCanvas(drawMode, rgbValue, lineWidth, first, second);
+    public synchronized void draw(String drawMode, int rgbValue, float lineWidth, Point first, Point second, String textInput) {
+        drawAndSaveCanvas(drawMode, rgbValue, lineWidth, first, second, textInput);
     }
 
     // Synchronized since multiple whiteboard server threads may access this
-    public synchronized void drawAndSaveCanvas(String drawMode,int rgbValue, float lineWidth, Point first, Point second) {
-        // TODO: add textInput param
+    public synchronized void drawAndSaveCanvas(String drawMode, int rgbValue, float lineWidth, Point first, Point second, String textInput) {
         this.g2d.setPaint(new Color(rgbValue));
         this.g2d.setStroke(new BasicStroke(lineWidth));
-        if (this.drawMode.equals("Text")) {
+        if (drawMode.equals("Text")) {
             Font font = new Font("TimesRoman", Font.BOLD, (int) lineWidth);
             this.g2d.setFont(font);
-            this.g2d.drawString(this.textInput.getText(), first.x, first.y);
+            this.g2d.drawString(textInput, first.x, first.y);
         } else if (!first.equals(second)) {
             switch (drawMode) {
                 case "Line":
