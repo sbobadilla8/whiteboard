@@ -3,6 +3,7 @@ package server;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import whiteboard.ChatUI;
 
 import javax.net.ServerSocketFactory;
 import java.io.DataInputStream;
@@ -18,9 +19,12 @@ public class ChatServer {
     private ServerSocket chatSocket;
     private ConcurrentHashMap<String, Socket> clientList;
     private ConcurrentHashMap<Integer, String> unsentChats;
+
+    private ChatUI chatUI;
     private int port;
 
-    public ChatServer() throws IOException {
+    public ChatServer(ChatUI chatUI) throws IOException {
+        this.chatUI = chatUI;
         this.port = 3001;
         this.clientList = new ConcurrentHashMap<>();
         ServerSocketFactory factory = ServerSocketFactory.getDefault();
