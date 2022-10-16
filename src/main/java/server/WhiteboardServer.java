@@ -152,8 +152,4 @@ public class WhiteboardServer {
     public String readMessage(DataInputStream input) throws IOException {
         return input.readUTF();
     }
-
-    public void writeMessage(DataOutputStream output, String message) throws IOException {
-        output.writeUTF(message);
-    }
 }

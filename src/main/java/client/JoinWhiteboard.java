@@ -16,19 +16,19 @@ public class JoinWhiteboard {
 
     static WhiteboardUI whiteboardUI;
     static Connection conn;
+    static Connection chatConn;
 
     public static void main(String[] args) {
-        if(args.length < 1) {
+        if (args.length < 1) {
             System.out.println("Invalid arguments, retry the command using the syntax: JoinWhiteBoard <ip> <port> <username>");
             return;
         }
-        // TODO: get the username from the args
 
         try {
             conn = new Connection("localhost", 3000);
             JSONObject connectionRequest = new JSONObject();
             conn.setUsername(args[0]);
-//            conn.setUsername("Username1");
+//            conn.setUsername("user1");
             connectionRequest.put("client-name", conn.getUsername());
             conn.output.writeUTF(connectionRequest.toJSONString());
             conn.output.flush();
@@ -42,11 +42,22 @@ public class JoinWhiteboard {
             BufferedImage initialImage = ImageIO.read(new ByteArrayInputStream(imageArr));
             conn.setFilename("remoteWhiteboard.png");
             ImageIO.write(initialImage, "png", new File(conn.getFilename()));
-            whiteboardUI = new WhiteboardUI("Whiteboard Client", false, conn);
+            whiteboardUI = new WhiteboardUI("Whiteboard Client - " + args[0], false, conn);
             whiteboardUI.setVisible(true);
+
+            chatConn = new Connection("localhost", 3001);
+            chatConn.output.writeUTF(connectionRequest.toJSONString());
+            chatConn.output.flush();
+            chatConn.input.readUTF();
+            chatConn.setUsername(args[0]);
+//            chatConn.setUsername("user1");
+            whiteboardUI.getChat().setConnection(chatConn);
 
             Thread t = new Thread(() -> listenServer(conn.socket));
             t.start();
+
+            Thread t2 = new Thread(() -> listenChatServer(chatConn.socket));
+            t2.start();
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -75,7 +86,7 @@ public class JoinWhiteboard {
         JSONObject command = null;
         try {
             command = (JSONObject) parser.parse(input.readUTF());
-            if (command.containsKey("username") && command.get("username").toString().equals(conn.getUsername())){
+            if (command.containsKey("username") && command.get("username").toString().equals(conn.getUsername())) {
                 return false;
             }
             String drawMode = command.get("draw-mode").toString();
@@ -93,6 +104,45 @@ public class JoinWhiteboard {
             Point second = new Point(x2, y2);
             String textInput = command.get("text-input").toString();
             whiteboardUI.getDrawingPanel().draw(drawMode, rgbValue, lineWidth, first, second, textInput);
+        } catch (ParseException | IOException e) {
+            throw new RuntimeException(e);
+        }
+        return false;
+    }
+
+    public static void listenChatServer(Socket conn) {
+        try (Socket serverSocket = conn) {
+            DataInputStream input = new DataInputStream(serverSocket.getInputStream());
+            boolean isConnTerminated = false;
+            // Listen to drawing commands
+            while (!isConnTerminated) {
+                if (input.available() > 0) {
+                    isConnTerminated = parseChatCommand(input);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static boolean parseChatCommand(DataInputStream input) {
+        JSONParser parser = new JSONParser();
+        // Attempt to convert read data to JSON
+        JSONObject command = null;
+        try {
+            command = (JSONObject) parser.parse(input.readUTF());
+            System.out.println(command.toJSONString());
+            if (command.containsKey("username") && command.get("username").toString().equals(chatConn.getUsername())) {
+                return false;
+            }
+            String username = "";
+            if (command.containsKey("username")) {
+                username = command.get("username").toString();
+            } else {
+                username = "admin";
+            }
+            String message = command.get("message").toString();
+            whiteboardUI.getChat().addReceivedMessage(username, message);
         } catch (ParseException | IOException e) {
             throw new RuntimeException(e);
         }

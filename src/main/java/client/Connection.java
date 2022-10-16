@@ -15,6 +15,7 @@ public class Connection {
 
     public Connection(String address, int port) throws IOException {
         this.socket = new Socket(address, port);
+        this.socket.setKeepAlive(true);
         this.input = new DataInputStream(this.socket.getInputStream());
         this.output = new DataOutputStream(this.socket.getOutputStream());
     }

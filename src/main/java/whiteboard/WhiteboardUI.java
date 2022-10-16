@@ -4,6 +4,7 @@ import client.Connection;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
+import server.ChatServer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,13 +21,17 @@ public class WhiteboardUI extends JFrame implements ActionListener {
     private JButton btnFile;
     private JButton btnColor;
     private JTextPane rgbShow;
-    private JList listConnectedUsers;
     private JPanel drawingPanelContainer;
     private JButton btnLineWidth;
-    private JPanel chatPanelContainer;
+    private JPanel connectedUsersContainer;
+    private JPanel chatContainer;
+    private JEditorPane chatPanel;
+    private JTextField chatInput;
+    private JButton btnSend;
+    private JEditorPane connectedUsers;
+    private JButton button1;
     private DrawingPanel drawingPanel;
-
-    private final ChatUI chatUI;
+    private Chat chat;
 
 
     public WhiteboardUI(String title, Boolean isAdmin, Connection conn) {
@@ -37,8 +42,9 @@ public class WhiteboardUI extends JFrame implements ActionListener {
         this.setContentPane(mainPanel);
         this.drawingPanel = new DrawingPanel(isAdmin, conn);
         this.drawingPanelContainer.add(drawingPanel);
-        this.chatUI = new ChatUI();
-        this.chatPanelContainer.add(chatUI);
+        this.chat = new Chat(isAdmin, chatPanel);
+
+        this.connectedUsers = new JEditorPane();
 
         final JPopupMenu filePopup = new JPopupMenu();
         final JPopupMenu colorPopup = new JPopupMenu();
@@ -73,6 +79,14 @@ public class WhiteboardUI extends JFrame implements ActionListener {
         btnCircle.addActionListener(this);
         btnFree.addActionListener(this);
         btnText.addActionListener(this);
+
+        btnSend.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                chat.sendMessage(chatInput.getText());
+                chatInput.setText("");
+            }
+        });
 
         JSlider lineWidthSlider = new JSlider();
         lineWidthSlider.setMinimum(0);
@@ -160,11 +174,6 @@ public class WhiteboardUI extends JFrame implements ActionListener {
             }
         });
 
-        String week[] = {"Monday", "Tuesday", "Wednesday",
-                "Thursday", "Friday", "Saturday", "Sunday"};
-
-        //create list
-        listConnectedUsers.setListData(week);
 
         /*try {
             File myObj = new File(this.fileName);
@@ -191,6 +200,10 @@ public class WhiteboardUI extends JFrame implements ActionListener {
 
     public DrawingPanel getDrawingPanel() {
         return this.drawingPanel;
+    }
+
+    public Chat getChat() {
+        return this.chat;
     }
 
     public void updateDrawButtonFocus(String drawMode) {
@@ -269,10 +282,10 @@ public class WhiteboardUI extends JFrame implements ActionListener {
      */
     private void $$$setupUI$$$() {
         mainPanel = new JPanel();
-        mainPanel.setLayout(new GridLayoutManager(2, 4, new Insets(0, 0, 0, 0), -1, -1));
+        mainPanel.setLayout(new GridLayoutManager(3, 1, new Insets(0, 0, 0, 0), -1, -1));
         final JPanel panel1 = new JPanel();
         panel1.setLayout(new GridLayoutManager(1, 10, new Insets(0, 0, 0, 0), -1, -1));
-        mainPanel.add(panel1, new GridConstraints(0, 0, 1, 4, GridConstraints.ANCHOR_NORTHWEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        mainPanel.add(panel1, new GridConstraints(0, 0, 2, 1, GridConstraints.ANCHOR_NORTHWEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         btnRectangle = new JButton();
         btnRectangle.setText("Rectangle");
         panel1.add(btnRectangle, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
@@ -306,18 +319,30 @@ public class WhiteboardUI extends JFrame implements ActionListener {
         btnLineWidth.setText("Line width");
         panel1.add(btnLineWidth, new GridConstraints(0, 7, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel2 = new JPanel();
-        panel2.setLayout(new GridLayoutManager(2, 1, new Insets(0, 0, 0, 0), -1, -1));
-        mainPanel.add(panel2, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        listConnectedUsers = new JList();
-        panel2.add(listConnectedUsers, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_VERTICAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
+        panel2.setLayout(new GridLayoutManager(1, 3, new Insets(0, 0, 0, 0), -1, -1));
+        mainPanel.add(panel2, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        connectedUsersContainer = new JPanel();
+        connectedUsersContainer.setLayout(new GridLayoutManager(2, 1, new Insets(0, 0, 0, 0), -1, -1));
+        panel2.add(connectedUsersContainer, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        connectedUsers = new JEditorPane();
+        connectedUsersContainer.add(connectedUsers, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
         final Spacer spacer1 = new Spacer();
-        panel2.add(spacer1, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        connectedUsersContainer.add(spacer1, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         drawingPanelContainer = new JPanel();
         drawingPanelContainer.setLayout(new GridBagLayout());
-        mainPanel.add(drawingPanelContainer, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        final JPanel panel3 = new JPanel();
-        panel3.setLayout(new GridLayoutManager(2, 1, new Insets(0, 0, 0, 0), -1, -1));
-        mainPanel.add(panel3, new GridConstraints(1, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        panel2.add(drawingPanelContainer, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        chatContainer = new JPanel();
+        chatContainer.setLayout(new GridLayoutManager(2, 2, new Insets(0, 0, 0, 0), -1, -1));
+        panel2.add(chatContainer, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        chatPanel = new JEditorPane();
+        chatPanel.setContentType("text/html");
+        chatPanel.setEditable(false);
+        chatContainer.add(chatPanel, new GridConstraints(0, 0, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
+        chatInput = new JTextField();
+        chatContainer.add(chatInput, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        btnSend = new JButton();
+        btnSend.setText("Send");
+        chatContainer.add(btnSend, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
     }
 
     /**

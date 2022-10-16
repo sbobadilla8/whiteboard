@@ -3,7 +3,7 @@ package server;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import whiteboard.ChatUI;
+import whiteboard.Chat;
 
 import javax.net.ServerSocketFactory;
 import java.io.DataInputStream;
@@ -11,8 +11,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
-import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ChatServer {
@@ -20,22 +18,22 @@ public class ChatServer {
     private ConcurrentHashMap<String, Socket> clientList;
     private ConcurrentHashMap<Integer, String> unsentChats;
 
-    private ChatUI chatUI;
+    private Chat chat;
     private int port;
 
-    public ChatServer(ChatUI chatUI) throws IOException {
-        this.chatUI = chatUI;
-        this.port = 3001;
+    public ChatServer(Chat chat) throws IOException {
         this.clientList = new ConcurrentHashMap<>();
+        this.port = 3001;
+        this.chat = chat;
         ServerSocketFactory factory = ServerSocketFactory.getDefault();
-        try{
+        try {
             this.chatSocket = factory.createServerSocket(this.port);
-            System.out.println("Chat server initialized on port "+this.port+", waiting for client connection...");
+            System.out.println("Chat server initialized on port " + this.port + ", waiting for client connection...");
 
             // Extremely cursed / 10
             new Thread(() -> {
                 // Wait for connections.
-                while(true){
+                while (true) {
                     Socket client = null;
                     try {
                         client = chatSocket.accept();
@@ -46,8 +44,7 @@ public class ChatServer {
                         Socket finalClient = client;
                         Thread t = new Thread(() -> serveClient(finalClient));
                         t.start();
-                    }
-                    catch (IOException e) {
+                    } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                 }
@@ -57,9 +54,9 @@ public class ChatServer {
         }
     }
 
+
     public void serveClient(Socket client) {
-        try(Socket clientSocket = client)
-        {
+        try (Socket clientSocket = client) {
 
             // The JSON Parser
             JSONParser parser = new JSONParser();
@@ -70,73 +67,66 @@ public class ChatServer {
 
             String clientName = readMessage(input);
             this.clientList.put(clientName, client);
-            System.out.println("CLIENT: "+clientName);
+            System.out.println("CLIENT: " + clientName);
 
-            output.writeUTF("Client "+ clientName+" successfully subscribed to chat");
+            output.writeUTF("Client " + clientName + " successfully subscribed to chat");
 
-            Boolean isPeerTerminated = false;
+            boolean isPeerTerminated = false;
             // Receive more data..
-            while(!isPeerTerminated){
-                if(input.available() > 0){
-                    isPeerTerminated = parseCommand(input, output);
+            while (!isPeerTerminated) {
+                if (input.available() > 0) {
+                    isPeerTerminated = parseCommand(input);
                 }
             }
-            System.out.println("Unsubscribing client: "+ clientName);
-            this.clientList.remove(clientName);
+            // TODO: remove clients from chat when they are kicked
         } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
     }
 
-    private Boolean parseCommand(DataInputStream input, DataOutputStream output) throws IOException, ParseException {
+    private Boolean parseCommand(DataInputStream input) throws IOException, ParseException {
         // The JSON Parser
         JSONParser parser = new JSONParser();
         // Attempt to convert read data to JSON
         JSONObject command = (JSONObject) parser.parse(readMessage(input));
-        System.out.println("COMMAND RECEIVED: "+command.toJSONString());
 
         int result = 0;
+        String username = command.get("username").toString();
+        String message = command.get("message").toString();
 
-        if(command.containsKey("command_name")){
-            System.out.println("IT HAS A COMMAND NAME");
-        }
+        this.chat.addReceivedMessage(username, message);
 
-        if (command.get("command_name").equals("Chat"))
-        {
-            //Math math = new Math();
-            //Integer firstInt = Integer.parseInt(command.get("first_integer").toString());
-            //Integer secondInt = Integer.parseInt(command.get("second_integer").toString());
-
-            switch((String) command.get("method_name"))
-            {
-                case "chat_message":
-                    System.out.println("Server parsing chat_message request");
-                    // TODO: Implement sharing of image file to new client
-                    //result = math.add(firstInt,secondInt);
-                    break;
-                default:
-                    try
-                    {
-                        throw new Exception();
-                    } catch (Exception e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
+        this.clientList.forEach((user, conn) -> {
+            if (!user.equals(username)){
+                try {
+                    DataOutputStream output = new DataOutputStream(conn.getOutputStream());
+                    output.writeUTF(command.toJSONString());
+                    output.flush();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
-            JSONObject resObj = new JSONObject();
-            resObj.put("result", result);
-
-            writeMessage(output, resObj.toJSONString());
-        }
-        // TODO Auto-generated method stub
+        });
         return false;
+    }
+
+    public void multicastMessage(JSONObject messageCommand){
+        this.clientList.forEach((user, conn) -> {
+            System.out.println(user);
+            if (!messageCommand.containsKey("username")) {
+                try {
+                    DataOutputStream output = new DataOutputStream(conn.getOutputStream());
+                    output.writeUTF(messageCommand.toJSONString());
+                    output.flush();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
     }
 
     public String readMessage(DataInputStream input) throws IOException {
         return input.readUTF();
     }
 
-    public void writeMessage(DataOutputStream output, String message) throws IOException {
-        output.writeUTF(message);
-    }
 }

@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="whiteboard.WhiteboardUI">
-  <grid id="27dc6" binding="mainPanel" layout-manager="GridBagLayout">
+  <grid id="27dc6" binding="mainPanel" layout-manager="GridLayoutManager" row-count="3" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
-      <xy x="20" y="20" width="1140" height="702"/>
+      <xy x="20" y="20" width="1247" height="702"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -10,8 +11,7 @@
       <grid id="f2922" layout-manager="GridLayoutManager" row-count="1" column-count="10" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
-          <grid row="0" column="0" row-span="1" col-span="4" vsize-policy="0" hsize-policy="2" anchor="9" fill="0" indent="0" use-parent-layout="false"/>
-          <gridbag weightx="1.0" weighty="0.0"/>
+          <grid row="0" column="0" row-span="2" col-span="1" vsize-policy="0" hsize-policy="2" anchor="9" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
         <border type="none"/>
@@ -107,47 +107,89 @@
           </component>
         </children>
       </grid>
-      <grid id="1006b" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="35195" layout-manager="GridLayoutManager" row-count="1" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
-          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-          <gridbag weightx="1.0" weighty="1.0"/>
+          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
         <border type="none"/>
         <children>
-          <component id="d52f2" class="javax.swing.JList" binding="listConnectedUsers">
+          <grid id="eac44" binding="connectedUsersContainer" layout-manager="GridLayoutManager" row-count="2" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
             <constraints>
-              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="0" anchor="8" fill="2" indent="0" use-parent-layout="false">
-                <preferred-size width="150" height="50"/>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <component id="cefcb" class="javax.swing.JEditorPane" binding="connectedUsers">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="6" hsize-policy="0" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                    <preferred-size width="150" height="50"/>
+                    <maximum-size width="150" height="50"/>
+                  </grid>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="bb206" class="javax.swing.JButton" binding="button1" default-binding="true">
+                <constraints>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="Button"/>
+                </properties>
+              </component>
+            </children>
+          </grid>
+          <grid id="9b388" binding="drawingPanelContainer" layout-manager="GridBagLayout">
+            <constraints>
+              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="1" use-parent-layout="false">
+                <minimum-size width="1000" height="800"/>
               </grid>
             </constraints>
             <properties/>
-          </component>
-          <vspacer id="6b0a0">
+            <border type="none"/>
+            <children/>
+          </grid>
+          <grid id="7853e" binding="chatContainer" layout-manager="GridLayoutManager" row-count="2" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
             <constraints>
-              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+              <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
             </constraints>
-          </vspacer>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <component id="beb21" class="javax.swing.JEditorPane" binding="chatPanel">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                    <preferred-size width="150" height="50"/>
+                  </grid>
+                </constraints>
+                <properties>
+                  <contentType value="text/html"/>
+                  <editable value="false"/>
+                </properties>
+              </component>
+              <component id="46f44" class="javax.swing.JTextField" binding="chatInput">
+                <constraints>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                    <preferred-size width="150" height="-1"/>
+                  </grid>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="397b4" class="javax.swing.JButton" binding="btnSend">
+                <constraints>
+                  <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="Send"/>
+                </properties>
+              </component>
+            </children>
+          </grid>
         </children>
-      </grid>
-      <grid id="959f0" binding="drawingPanelContainer" layout-manager="GridBagLayout">
-        <constraints>
-          <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-          <gridbag weightx="1.0" weighty="1.0"/>
-        </constraints>
-        <properties/>
-        <border type="none"/>
-        <children/>
-      </grid>
-      <grid id="7cc94" binding="chatPanelContainer" layout-manager="GridBagLayout">
-        <constraints>
-          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-          <gridbag weightx="1.0" weighty="1.0"/>
-        </constraints>
-        <properties/>
-        <border type="none"/>
-        <children/>
       </grid>
     </children>
   </grid>
