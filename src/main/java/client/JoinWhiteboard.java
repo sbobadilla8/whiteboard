@@ -7,6 +7,7 @@ import org.json.simple.parser.ParseException;
 import whiteboard.WhiteboardUI;
 
 import javax.imageio.ImageIO;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -30,6 +31,8 @@ public class JoinWhiteboard {
         }
         connectedUsers = new Vector<>();
         try {
+            JSONParser parser = new JSONParser();
+            System.out.println("Requesting access to whiteboard...");
             conn = new Connection("localhost", 3000);
             JSONObject connectionRequest = new JSONObject();
             conn.setUsername(args[0]);
@@ -38,6 +41,11 @@ public class JoinWhiteboard {
             conn.output.writeUTF(connectionRequest.toJSONString());
             conn.output.flush();
             // Read hello from server.
+            JSONObject response = (JSONObject) parser.parse(conn.input.readUTF());
+            if (response.get("result").toString().equals("rejected")){
+                System.out.println("Admin rejected the connection :(");
+                return;
+            }
             byte[] sizeArr = new byte[4];
             conn.input.read(sizeArr);
             int size = ByteBuffer.wrap(sizeArr).asIntBuffer().get();
@@ -56,7 +64,6 @@ public class JoinWhiteboard {
             chatConn.input.readUTF();
             chatConn.setUsername(args[0]);
 //            chatConn.setUsername("user1");
-            JSONParser parser = new JSONParser();
             JSONObject command = (JSONObject) parser.parse(conn.input.readUTF());
             JSONArray values = (JSONArray) command.get("connected-users");
             whiteboardUI.getChat().setConnection(chatConn);
