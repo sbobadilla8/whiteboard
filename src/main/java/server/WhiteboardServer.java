@@ -57,8 +57,8 @@ public class WhiteboardServer {
                         if (n == 0) {
                             this.usersList.add(command.get("client-name").toString());
                             this.multicastNewUser(this.usersList.lastElement().toString());
-                            this.clientList.put(clientName, client);
-                            resultMessage.put("result","accepted");
+                            this.clientList.put(command.get("client-name").toString(), client);
+                            resultMessage.put("result", "accepted");
                             Socket finalClient = client;
                             Thread t = new Thread(() -> serveClient(finalClient));
                             t.start();
@@ -109,16 +109,13 @@ public class WhiteboardServer {
 
             boolean isPeerTerminated = false;
             // Listen to drawing commands
-            while (!isPeerTerminated) {
+            while (!isPeerTerminated || !client.isClosed()) {
                 if (input.available() > 0) {
                     isPeerTerminated = parseCommand(input);
                 }
             }
-            // TODO: kick clients from server
-//            System.out.println("Terminating client connection: " + clientName);
-//            this.clientList.remove(clientName);
         } catch (IOException | ParseException e) {
-            e.printStackTrace();
+            System.out.println("Client disconnected");
         }
     }
 
@@ -153,7 +150,9 @@ public class WhiteboardServer {
                     output.writeUTF(command.toJSONString());
                     output.flush();
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    System.out.println("Client disconnected");
+                    this.clientList.remove(user);
+                    multicastUsers(user);
                 }
             }
         });
@@ -169,8 +168,26 @@ public class WhiteboardServer {
                     output.writeUTF(drawingCommand.toJSONString());
                     output.flush();
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    System.out.println("Client disconnected");
+                    this.clientList.remove(user);
+                    multicastUsers(user);
                 }
+            }
+        });
+    }
+
+    public void multicastUsers(String username){
+        this.clientList.forEach((user, conn) -> {
+            try {
+                DataOutputStream output = new DataOutputStream(conn.getOutputStream());
+                JSONObject removedUser = new JSONObject();
+                removedUser.put("removed-user", username);
+                output.writeUTF(removedUser.toJSONString());
+                output.flush();
+            } catch (IOException e) {
+                System.out.println("Client disconnected");
+                this.clientList.remove(user);
+                multicastUsers(user);
             }
         });
     }
@@ -184,12 +201,15 @@ public class WhiteboardServer {
                 outputStream.writeUTF(newUser.toJSONString());
                 outputStream.flush();
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                System.out.println("Client disconnected");
+                this.clientList.remove(user);
+                multicastUsers(user);
             }
         });
     }
 
-    public void kickUser(String username){
+    public void kickUser(String username) {
+        System.out.println(this.clientList);
         Socket client = this.clientList.get(username);
         try {
             DataOutputStream outputStream = new DataOutputStream(client.getOutputStream());

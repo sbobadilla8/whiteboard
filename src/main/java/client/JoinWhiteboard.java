@@ -24,6 +24,7 @@ public class JoinWhiteboard {
 
     static Vector connectedUsers;
 
+
     public static void main(String[] args) {
         if (args.length < 1) {
             System.out.println("Invalid arguments, retry the command using the syntax: JoinWhiteBoard <ip> <port> <username>");
@@ -105,8 +106,19 @@ public class JoinWhiteboard {
         JSONObject command = null;
         try {
             command = (JSONObject) parser.parse(input.readUTF());
+            System.out.println(command);
+            if (command.containsKey("kicked")){
+                JOptionPane.showMessageDialog(whiteboardUI, "You have been kicked");
+                System.exit(0);
+            }
             if (command.containsKey("new-user")){
                 connectedUsers.add(command.get("new-user").toString());
+                whiteboardUI.getConnectedUsers().setListData(connectedUsers);
+                return false;
+            }
+            if (command.containsKey("removed-user")){
+                String userRemoved = command.get("removed-user").toString();
+                connectedUsers.remove(userRemoved);
                 whiteboardUI.getConnectedUsers().setListData(connectedUsers);
                 return false;
             }

@@ -78,7 +78,6 @@ public class ChatServer {
                     isPeerTerminated = parseCommand(input);
                 }
             }
-            // TODO: remove clients from chat when they are kicked
         } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
@@ -90,7 +89,6 @@ public class ChatServer {
         // Attempt to convert read data to JSON
         JSONObject command = (JSONObject) parser.parse(readMessage(input));
 
-        int result = 0;
         String username = command.get("username").toString();
         String message = command.get("message").toString();
 
@@ -103,7 +101,8 @@ public class ChatServer {
                     output.writeUTF(command.toJSONString());
                     output.flush();
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    System.out.println("Client disconnected");
+                    this.clientList.remove(user);
                 }
             }
         });
@@ -119,7 +118,8 @@ public class ChatServer {
                     output.writeUTF(messageCommand.toJSONString());
                     output.flush();
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    System.out.println("Client disconnected");
+                    this.clientList.remove(user);
                 }
             }
         });
