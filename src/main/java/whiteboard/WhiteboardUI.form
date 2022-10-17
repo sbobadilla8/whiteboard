@@ -3,7 +3,7 @@
   <grid id="27dc6" binding="mainPanel" layout-manager="GridLayoutManager" row-count="3" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
-      <xy x="20" y="20" width="1434" height="853"/>
+      <xy x="20" y="20" width="1438" height="853"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -151,7 +151,7 @@
             <border type="none"/>
             <children/>
           </grid>
-          <grid id="7853e" binding="chatContainer" layout-manager="GridLayoutManager" row-count="2" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+          <grid id="7853e" binding="chatContainer" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
             <margin top="0" left="0" bottom="0" right="0"/>
             <constraints>
               <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -159,33 +159,49 @@
             <properties/>
             <border type="none"/>
             <children>
-              <component id="beb21" class="javax.swing.JEditorPane" binding="chatPanel">
+              <scrollpane id="5cfe5" binding="chatScrollContainer">
                 <constraints>
-                  <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
-                    <preferred-size width="150" height="50"/>
-                  </grid>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="4" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
-                  <contentType value="text/html"/>
-                  <editable value="false"/>
+                  <verticalScrollBarPolicy value="22"/>
                 </properties>
-              </component>
-              <component id="46f44" class="javax.swing.JTextField" binding="chatInput">
+                <border type="none"/>
+                <children>
+                  <component id="4c8b9" class="javax.swing.JEditorPane" binding="chatPanel">
+                    <constraints/>
+                    <properties>
+                      <maximumSize width="100" height="1000"/>
+                    </properties>
+                  </component>
+                </children>
+              </scrollpane>
+              <grid id="4c479" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                <margin top="0" left="0" bottom="0" right="0"/>
                 <constraints>
-                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-                    <preferred-size width="150" height="-1"/>
-                  </grid>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties/>
-              </component>
-              <component id="397b4" class="javax.swing.JButton" binding="btnSend">
-                <constraints>
-                  <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <text value="Send"/>
-                </properties>
-              </component>
+                <border type="none"/>
+                <children>
+                  <component id="a8b6c" class="javax.swing.JTextField" binding="chatInput">
+                    <constraints>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                        <preferred-size width="150" height="-1"/>
+                      </grid>
+                    </constraints>
+                    <properties/>
+                  </component>
+                  <component id="c4109" class="javax.swing.JButton" binding="btnSend">
+                    <constraints>
+                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text value="Button"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
             </children>
           </grid>
         </children>

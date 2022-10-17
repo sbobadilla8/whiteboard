@@ -3,8 +3,6 @@ package whiteboard;
 import client.Connection;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
-import com.intellij.uiDesigner.core.Spacer;
-import server.ChatServer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -30,6 +28,7 @@ public class WhiteboardUI extends JFrame implements ActionListener {
     private JButton btnSend;
     private JList connectedUsers;
     private JButton button1;
+    private JScrollPane chatScrollContainer;
     private DrawingPanel drawingPanel;
     private Chat chat;
 

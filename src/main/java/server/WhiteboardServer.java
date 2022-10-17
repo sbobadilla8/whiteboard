@@ -47,11 +47,27 @@ public class WhiteboardServer {
                         client = whiteboardSocket.accept();
                         client.setKeepAlive(true);
                         System.out.println("Client applying for connection!");
-                        // TODO: approval of new connections
-                        Socket finalClient = client;
-                        Thread t = new Thread(() -> serveClient(finalClient));
-                        t.start();
-                    } catch (IOException e) {
+                        JSONParser parser = new JSONParser();
+                        DataInputStream input = new DataInputStream(client.getInputStream());
+                        String clientName = readMessage(input);
+                        JSONObject command = (JSONObject) parser.parse(clientName);
+                        //Custom button text
+                        int n = JOptionPane.showConfirmDialog(whiteboard, "New user applying for connection! Admit "+command.get("client-name").toString()+"?", "New connection request", JOptionPane.YES_NO_OPTION);
+                        if (n == 0){
+                            this.usersList.add(command.get("client-name").toString());
+                            this.multicastNewUser(this.usersList.lastElement().toString());
+                            this.clientList.put(clientName, client);
+                            Socket finalClient = client;
+                            Thread t = new Thread(() -> serveClient(finalClient));
+                            t.start();
+                        } else {
+                            DataOutputStream output = new DataOutputStream(client.getOutputStream());
+                            JSONObject errorMessage = new JSONObject();
+                            errorMessage.put("result",false);
+                            output.writeUTF(errorMessage.toJSONString());
+                            output.flush();
+                        }
+                    } catch (IOException | ParseException e) {
                         throw new RuntimeException(e);
                     }
                 }
@@ -67,9 +83,9 @@ public class WhiteboardServer {
             DataInputStream input = new DataInputStream(clientSocket.getInputStream());
             DataOutputStream output = new DataOutputStream(clientSocket.getOutputStream());
 
-            String clientName = readMessage(input);
-            this.clientList.put(clientName, client);
-            System.out.println("CLIENT: " + clientName);
+//            String clientName = readMessage(input);
+//            this.clientList.put(clientName, client);
+//            System.out.println("CLIENT: " + clientName);
             // The welcome message consists of two parts - the first is the initial canvas size, the second is the canvas png
             BufferedImage image = ImageIO.read(new File(this.whiteboard.getFileName()));
 
@@ -88,10 +104,9 @@ public class WhiteboardServer {
             output.writeUTF(userList.toJSONString());
             output.flush();
 
-            JSONObject command = (JSONObject) parser.parse(clientName);
-            this.usersList.add(command.get("client-name").toString());
+
             this.connectedUsersList.setListData(usersList);
-            this.multicastNewUser(command.get("client-name").toString());
+
 
             boolean isPeerTerminated = false;
             // Listen to drawing commands
@@ -161,9 +176,9 @@ public class WhiteboardServer {
         });
     }
 
-    public void multicastNewUser(String username){
+    public void multicastNewUser(String username) {
         this.clientList.forEach((user, conn) -> {
-            try{
+            try {
                 DataOutputStream outputStream = new DataOutputStream(conn.getOutputStream());
                 JSONObject newUser = new JSONObject();
                 newUser.put("new-user", username);
@@ -179,7 +194,7 @@ public class WhiteboardServer {
         return input.readUTF();
     }
 
-    public void setConnectedUsersList(JList connectedUsersList){
+    public void setConnectedUsersList(JList connectedUsersList) {
         this.connectedUsersList = connectedUsersList;
     }
 }
