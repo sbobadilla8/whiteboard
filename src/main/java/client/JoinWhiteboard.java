@@ -1,5 +1,6 @@
 package client;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -9,8 +10,10 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.lang.reflect.Array;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.util.Vector;
 
 public class JoinWhiteboard {
 
@@ -18,12 +21,14 @@ public class JoinWhiteboard {
     static Connection conn;
     static Connection chatConn;
 
+    static Vector connectedUsers;
+
     public static void main(String[] args) {
         if (args.length < 1) {
             System.out.println("Invalid arguments, retry the command using the syntax: JoinWhiteBoard <ip> <port> <username>");
             return;
         }
-
+        connectedUsers = new Vector<>();
         try {
             conn = new Connection("localhost", 3000);
             JSONObject connectionRequest = new JSONObject();
@@ -51,7 +56,14 @@ public class JoinWhiteboard {
             chatConn.input.readUTF();
             chatConn.setUsername(args[0]);
 //            chatConn.setUsername("user1");
+            JSONParser parser = new JSONParser();
+            JSONObject command = (JSONObject) parser.parse(conn.input.readUTF());
+            JSONArray values = (JSONArray) command.get("connected-users");
             whiteboardUI.getChat().setConnection(chatConn);
+            connectedUsers.add("Admin");
+            connectedUsers.addAll(values);
+            whiteboardUI.getConnectedUsers().setListData(connectedUsers);
+
 
             Thread t = new Thread(() -> listenServer(conn.socket));
             t.start();
@@ -59,7 +71,7 @@ public class JoinWhiteboard {
             Thread t2 = new Thread(() -> listenChatServer(chatConn.socket));
             t2.start();
 
-        } catch (IOException e) {
+        } catch (IOException | ParseException e) {
             throw new RuntimeException(e);
         }
     }
@@ -86,6 +98,11 @@ public class JoinWhiteboard {
         JSONObject command = null;
         try {
             command = (JSONObject) parser.parse(input.readUTF());
+            if (command.containsKey("new-user")){
+                connectedUsers.add(command.get("new-user").toString());
+                whiteboardUI.getConnectedUsers().setListData(connectedUsers);
+                return false;
+            }
             if (command.containsKey("username") && command.get("username").toString().equals(conn.getUsername())) {
                 return false;
             }

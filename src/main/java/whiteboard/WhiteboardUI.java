@@ -44,7 +44,6 @@ public class WhiteboardUI extends JFrame implements ActionListener {
         this.drawingPanelContainer.add(drawingPanel);
         this.chat = new Chat(isAdmin, chatPanel);
 
-
         final JPopupMenu filePopup = new JPopupMenu();
         final JPopupMenu colorPopup = new JPopupMenu();
         final JPopupMenu lineWidthPopup = new JPopupMenu();
@@ -205,6 +204,9 @@ public class WhiteboardUI extends JFrame implements ActionListener {
         return this.chat;
     }
 
+    public JList getConnectedUsers(){
+        return this.connectedUsers;
+    }
     public void updateDrawButtonFocus(String drawMode) {
         switch (drawMode) {
             case "Line":

@@ -1,5 +1,6 @@
 package server;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -15,22 +16,23 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class WhiteboardServer {
     private ServerSocket whiteboardSocket;
-
     private ConcurrentHashMap<String, Socket> clientList;
-
     private String fileName;
-
     private DrawingPanel whiteboard;
+    private JList connectedUsersList;
+    private Vector usersList;
 
 
     public WhiteboardServer(String fileName, DrawingPanel whiteboard) throws IOException {
         this.clientList = new ConcurrentHashMap<>();
         this.fileName = fileName;
         this.whiteboard = whiteboard;
+        this.usersList = new Vector<>();
         ServerSocketFactory factory = ServerSocketFactory.getDefault();
         try {
             this.whiteboardSocket = factory.createServerSocket(3000);
@@ -46,7 +48,6 @@ public class WhiteboardServer {
                         client.setKeepAlive(true);
                         System.out.println("Client applying for connection!");
                         // TODO: approval of new connections
-                        // Start a new thread for a connection
                         Socket finalClient = client;
                         Thread t = new Thread(() -> serveClient(finalClient));
                         t.start();
@@ -69,7 +70,6 @@ public class WhiteboardServer {
             String clientName = readMessage(input);
             this.clientList.put(clientName, client);
             System.out.println("CLIENT: " + clientName);
-
             // The welcome message consists of two parts - the first is the initial canvas size, the second is the canvas png
             BufferedImage image = ImageIO.read(new File(this.whiteboard.getFileName()));
 
@@ -80,6 +80,18 @@ public class WhiteboardServer {
             output.write(size);
             output.write(byteArrayOutputStream.toByteArray());
             output.flush();
+
+            JSONObject userList = new JSONObject();
+            JSONArray values = new JSONArray();
+            values.addAll(this.usersList);
+            userList.put("connected-users", values);
+            output.writeUTF(userList.toJSONString());
+            output.flush();
+
+            JSONObject command = (JSONObject) parser.parse(clientName);
+            this.usersList.add(command.get("client-name").toString());
+            this.connectedUsersList.setListData(usersList);
+            this.multicastNewUser(command.get("client-name").toString());
 
             boolean isPeerTerminated = false;
             // Listen to drawing commands
@@ -149,7 +161,25 @@ public class WhiteboardServer {
         });
     }
 
+    public void multicastNewUser(String username){
+        this.clientList.forEach((user, conn) -> {
+            try{
+                DataOutputStream outputStream = new DataOutputStream(conn.getOutputStream());
+                JSONObject newUser = new JSONObject();
+                newUser.put("new-user", username);
+                outputStream.writeUTF(newUser.toJSONString());
+                outputStream.flush();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
     public String readMessage(DataInputStream input) throws IOException {
         return input.readUTF();
+    }
+
+    public void setConnectedUsersList(JList connectedUsersList){
+        this.connectedUsersList = connectedUsersList;
     }
 }

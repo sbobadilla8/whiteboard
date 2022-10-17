@@ -21,6 +21,7 @@ public class CreateWhiteboard {
             frame.getDrawingPanel().setServer(whiteboardServer);
             ChatServer chatServer = new ChatServer(frame.getChat());
             frame.getChat().setChatServer(chatServer);
+            whiteboardServer.setConnectedUsersList(frame.getConnectedUsers());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
