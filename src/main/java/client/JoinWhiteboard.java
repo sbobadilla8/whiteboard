@@ -107,6 +107,10 @@ public class JoinWhiteboard {
         try {
             command = (JSONObject) parser.parse(input.readUTF());
             System.out.println(command);
+            if (command.containsKey("killall")){
+                JOptionPane.showMessageDialog(whiteboardUI, "Admin closed");
+                System.exit(0);
+            }
             if (command.containsKey("kicked")){
                 JOptionPane.showMessageDialog(whiteboardUI, "You have been kicked");
                 System.exit(0);

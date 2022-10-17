@@ -230,6 +230,24 @@ public class WhiteboardServer {
         }
     }
 
+    public void killAll(){
+        this.clientList.forEach((user, conn) -> {
+            try {
+                DataOutputStream outputStream = new DataOutputStream(conn.getOutputStream());
+                JSONObject killAll = new JSONObject();
+                killAll.put("killall", "killall");
+                outputStream.writeUTF(killAll.toJSONString());
+                outputStream.flush();
+            } catch (IOException e) {
+                // It shouldn't need to get here... check later.
+                System.out.println("Client disconnected");
+                this.clientList.remove(user);
+                this.usersList.remove(user);
+                multicastUsers(user);
+            }
+        });
+    }
+
     public String readMessage(DataInputStream input) throws IOException {
         return input.readUTF();
     }
