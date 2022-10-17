@@ -258,6 +258,10 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
         this.repaint();
     }
 
+    public void kickUser(String username){
+        this.server.kickUser(username);
+    }
+
     public String getFileName() {
         return this.fileName;
     }

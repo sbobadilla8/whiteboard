@@ -94,6 +94,8 @@ public class WhiteboardUI extends JFrame implements ActionListener {
             }
         });
 
+        btnKick.setVisible(isAdmin);
+
         JSlider lineWidthSlider = new JSlider();
         lineWidthSlider.setMinimum(0);
         lineWidthSlider.setMaximum(40);
@@ -179,19 +181,6 @@ public class WhiteboardUI extends JFrame implements ActionListener {
                 colorPopup.show(e.getComponent(), e.getX(), e.getY() + 10);
             }
         });
-
-
-        /*try {
-            File myObj = new File(this.fileName);
-            if (myObj.createNewFile()) {
-                System.out.println("File created: " + myObj.getName());
-            } else {
-                System.out.println("File already exists.");
-            }
-        } catch (IOException e) {
-            System.out.println("An error occurred.");
-            e.printStackTrace();
-        }*/
 
         String drawMode = "Line";
         drawingPanel.setDrawMode(drawMode);
