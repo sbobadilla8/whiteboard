@@ -152,6 +152,7 @@ public class WhiteboardServer {
                 } catch (IOException e) {
                     System.out.println("Client disconnected");
                     this.clientList.remove(user);
+                    this.usersList.remove(user);
                     multicastUsers(user);
                 }
             }
@@ -170,6 +171,7 @@ public class WhiteboardServer {
                 } catch (IOException e) {
                     System.out.println("Client disconnected");
                     this.clientList.remove(user);
+                    this.usersList.remove(user);
                     multicastUsers(user);
                 }
             }
@@ -177,6 +179,7 @@ public class WhiteboardServer {
     }
 
     public void multicastUsers(String username){
+        this.connectedUsersList.setListData(usersList);
         this.clientList.forEach((user, conn) -> {
             try {
                 DataOutputStream output = new DataOutputStream(conn.getOutputStream());
@@ -187,6 +190,7 @@ public class WhiteboardServer {
             } catch (IOException e) {
                 System.out.println("Client disconnected");
                 this.clientList.remove(user);
+                this.usersList.remove(user);
                 multicastUsers(user);
             }
         });
@@ -203,6 +207,7 @@ public class WhiteboardServer {
             } catch (IOException e) {
                 System.out.println("Client disconnected");
                 this.clientList.remove(user);
+                this.usersList.remove(user);
                 multicastUsers(user);
             }
         });
@@ -219,6 +224,7 @@ public class WhiteboardServer {
             outputStream.flush();
             client.close();
             this.clientList.remove(username);
+            this.usersList.remove(username);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
