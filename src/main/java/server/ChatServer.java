@@ -125,6 +125,21 @@ public class ChatServer {
         });
     }
 
+    public void kickUser(String username){
+        Socket client = this.clientList.get(username);
+        try {
+            DataOutputStream outputStream = new DataOutputStream(client.getOutputStream());
+            JSONObject kickedMessage = new JSONObject();
+            kickedMessage.put("kicked", "You have been kicked");
+            outputStream.writeUTF(kickedMessage.toJSONString());
+            outputStream.flush();
+            client.close();
+            this.clientList.remove(username);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public String readMessage(DataInputStream input) throws IOException {
         return input.readUTF();
     }

@@ -27,7 +27,7 @@ public class WhiteboardUI extends JFrame implements ActionListener {
     private JTextField chatInput;
     private JButton btnSend;
     private JList connectedUsers;
-    private JButton button1;
+    private JButton btnKick;
     private JScrollPane chatScrollContainer;
     private DrawingPanel drawingPanel;
     private Chat chat;
@@ -82,6 +82,15 @@ public class WhiteboardUI extends JFrame implements ActionListener {
             public void mouseClicked(MouseEvent e) {
                 chat.sendMessage(chatInput.getText());
                 chatInput.setText("");
+            }
+        });
+
+        btnKick.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                String username = connectedUsers.getSelectedValue().toString();
+                chat.kickUser(username);
+                drawingPanel.kickUser(username);
             }
         });
 
@@ -203,9 +212,10 @@ public class WhiteboardUI extends JFrame implements ActionListener {
         return this.chat;
     }
 
-    public JList getConnectedUsers(){
+    public JList getConnectedUsers() {
         return this.connectedUsers;
     }
+
     public void updateDrawButtonFocus(String drawMode) {
         switch (drawMode) {
             case "Line":
@@ -324,9 +334,9 @@ public class WhiteboardUI extends JFrame implements ActionListener {
         connectedUsersContainer = new JPanel();
         connectedUsersContainer.setLayout(new GridLayoutManager(2, 1, new Insets(0, 0, 0, 0), -1, -1));
         panel2.add(connectedUsersContainer, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        button1 = new JButton();
-        button1.setText("Button");
-        connectedUsersContainer.add(button1, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        btnKick = new JButton();
+        btnKick.setText("Button");
+        connectedUsersContainer.add(btnKick, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         connectedUsers = new JList();
         connectedUsersContainer.add(connectedUsers, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
         drawingPanelContainer = new JPanel();

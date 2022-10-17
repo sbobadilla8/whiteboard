@@ -66,4 +66,8 @@ public class Chat {
             this.chatServer.multicastMessage(messageCommand);
         }
     }
+
+    public void kickUser(String username){
+        this.chatServer.kickUser(username);
+    }
 }
