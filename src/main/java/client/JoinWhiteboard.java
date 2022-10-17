@@ -47,6 +47,9 @@ public class JoinWhiteboard {
                 System.out.println("Admin rejected the connection :(");
                 return;
             }
+
+            JSONObject fileNameObj = (JSONObject) parser.parse(conn.input.readUTF());
+            System.out.println("File Name: "+fileNameObj.get("fileName").toString());
             byte[] sizeArr = new byte[4];
             conn.input.read(sizeArr);
             int size = ByteBuffer.wrap(sizeArr).asIntBuffer().get();

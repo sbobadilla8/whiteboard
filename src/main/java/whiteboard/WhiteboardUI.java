@@ -47,16 +47,48 @@ public class WhiteboardUI extends JFrame implements ActionListener {
         final JPopupMenu colorPopup = new JPopupMenu();
         final JPopupMenu lineWidthPopup = new JPopupMenu();
 
-        filePopup.add(new JMenuItem(new AbstractAction("Option 1") {
-            public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(mainPanel, "Option 1 selected");
-            }
-        }));
-        filePopup.add(new JMenuItem(new AbstractAction("Option 2") {
-            public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(mainPanel, "Option 2 selected");
-            }
-        }));
+        if(isAdmin) {
+            filePopup.add(new JMenuItem(new AbstractAction("New") {
+                public void actionPerformed(ActionEvent e) {
+                    int n = JOptionPane.showConfirmDialog(drawingPanel, "This will override all unsaved changes. Do you wish to proceed?", "New File", JOptionPane.YES_NO_OPTION);
+                    if(n == 0) {
+                        drawingPanel.initializeBlankCanvas(true);
+                    }
+                }
+            }));
+            filePopup.add(new JMenuItem(new AbstractAction("Open") {
+                public void actionPerformed(ActionEvent e) {
+                    JOptionPane.showMessageDialog(mainPanel, "Option 2 selected");
+                }
+            }));
+            filePopup.add(new JMenuItem(new AbstractAction("Save") {
+                public void actionPerformed(ActionEvent e) {
+                    drawingPanel.saveFile("");
+                    JOptionPane.showMessageDialog(mainPanel, "File saved successfully.");
+                }
+            }));
+            filePopup.add(new JMenuItem(new AbstractAction("Save As") {
+                public void actionPerformed(ActionEvent e) {
+                    String customSaveFileName = (String) JOptionPane.showInputDialog(drawingPanel, "Enter file name to save as", "whiteboard_SNAPSHOT.png");
+                    System.out.println(customSaveFileName);
+                    if(customSaveFileName != null) {
+                        drawingPanel.saveFile(customSaveFileName);
+                        JOptionPane.showMessageDialog(mainPanel, "File saved successfully.");
+                    }
+                }
+            }));
+            filePopup.add(new JMenuItem(new AbstractAction("Close") {
+                public void actionPerformed(ActionEvent e) {
+                    int n = JOptionPane.showConfirmDialog(drawingPanel, "All clients will be disconnected, and unsaved changes will be lost. Do you wish to proceed?", "Close Whiteboard", JOptionPane.YES_NO_OPTION);
+                    if(n == 0 ) {
+                        System.out.println("Goodbye");
+                        //drawingPanel.getServer().killAll();
+                        System.exit(0);
+                    }
+
+                }
+            }));
+        }
 
         btnFile.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
@@ -94,6 +126,7 @@ public class WhiteboardUI extends JFrame implements ActionListener {
             }
         });
 
+        btnFile.setVisible(isAdmin);
         btnKick.setVisible(isAdmin);
         btnKick.setText("Kick user");
 

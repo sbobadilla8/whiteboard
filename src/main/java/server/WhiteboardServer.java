@@ -82,19 +82,8 @@ public class WhiteboardServer {
             JSONParser parser = new JSONParser();
             DataInputStream input = new DataInputStream(clientSocket.getInputStream());
             DataOutputStream output = new DataOutputStream(clientSocket.getOutputStream());
-//            String clientName = readMessage(input);
-//            this.clientList.put(clientName, client);
-//            System.out.println("CLIENT: " + clientName);
-            // The welcome message consists of two parts - the first is the initial canvas size, the second is the canvas png
-            BufferedImage image = ImageIO.read(new File(this.whiteboard.getFileName()));
 
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            ImageIO.write(image, "png", byteArrayOutputStream);
-
-            byte[] size = ByteBuffer.allocate(4).putInt(byteArrayOutputStream.size()).array();
-            output.write(size);
-            output.write(byteArrayOutputStream.toByteArray());
-            output.flush();
+            sendImage(output);
 
             JSONObject userList = new JSONObject();
             JSONArray values = new JSONArray();
@@ -159,6 +148,18 @@ public class WhiteboardServer {
         });
 
         return false;
+    }
+
+    public void multicastImage() {
+        this.clientList.forEach((user, conn) -> {
+            try {
+                DataOutputStream output = new DataOutputStream(conn.getOutputStream());
+                sendImage(output);
+            }
+            catch(IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     public void multicastDrawing(JSONObject drawingCommand) {
@@ -254,5 +255,22 @@ public class WhiteboardServer {
 
     public void setConnectedUsersList(JList connectedUsersList) {
         this.connectedUsersList = connectedUsersList;
+    }
+
+    public void sendImage(DataOutputStream output) throws IOException {
+        // The welcome message consists of three parts - the first is the file name, the second is the initial canvas size, the second is the canvas png
+        JSONObject fileNameObj = new JSONObject();
+        fileNameObj.put("fileName", whiteboard.getFileName());
+        output.writeUTF(fileNameObj.toJSONString());
+
+        BufferedImage image = ImageIO.read(new File(this.whiteboard.getFileName()));
+
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        ImageIO.write(image, "png", byteArrayOutputStream);
+
+        byte[] size = ByteBuffer.allocate(4).putInt(byteArrayOutputStream.size()).array();
+        output.write(size);
+        output.write(byteArrayOutputStream.toByteArray());
+        output.flush();
     }
 }

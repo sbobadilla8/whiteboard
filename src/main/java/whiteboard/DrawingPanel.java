@@ -18,7 +18,7 @@ import java.util.Map;
 
 public class DrawingPanel extends JPanel implements ActionListener, MouseListener, MouseMotionListener, KeyListener {
 
-    private final BufferedImage bufferedImage;
+    private BufferedImage bufferedImage;
     private Graphics2D g2d;
     private String drawMode;
     private Point first = new Point(0, 0);
@@ -48,14 +48,11 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
         } else {
             this.connection = null;
             // Long.toString is very much necessary, do not remove
-            this.fileName = "whiteboard_" + Long.toString(System.currentTimeMillis()) + ".png";
-            this.bufferedImage = new BufferedImage(1000, 800, BufferedImage.TYPE_INT_ARGB);
-            this.g2d = this.bufferedImage.createGraphics();
-            this.g2d.setColor(Color.WHITE);
-            this.g2d.fillRect(0, 0, 1000, 800);
+            setFileName("whiteboard_" + Long.toString(System.currentTimeMillis()) + ".png");
+            initializeBlankCanvas(false);
         }
         try {
-            ImageIO.write(this.bufferedImage, "PNG", new File(this.fileName));
+            writeFile(this.fileName);
             imageLabel = new JLabel(new ImageIcon(ImageIO.read(new File(this.fileName))));
             this.add(imageLabel);
         } catch (IOException e) {
@@ -70,6 +67,10 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
 
     public void setServer(WhiteboardServer server){
         this.server = server;
+    }
+
+    public WhiteboardServer getServer(){
+        return this.server;
     }
 
     public void setDrawMode(String drawMode) {
@@ -238,10 +239,15 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
                 case "Free":
                     this.g2d.drawLine(first.x, first.y, second.x, second.y);
                     break;
+                case "Clean":
+                    System.out.println("Clearing whiteboard ...");
+                    this.g2d.setColor(Color.WHITE);
+                    this.g2d.fillRect(0, 0, 1000, 800);
+                    break;
             }
         }
         try {
-            ImageIO.write(this.bufferedImage, "PNG", new File(fileName));
+            writeFile(fileName);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -256,6 +262,48 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
         }
 
         this.repaint();
+    }
+
+    public void initializeBlankCanvas(Boolean overwriteExisting) {
+        if(!overwriteExisting) {
+            System.out.println("Initializing buffered image ...");
+            this.bufferedImage = new BufferedImage(1000, 800, BufferedImage.TYPE_INT_ARGB);
+            this.g2d = this.bufferedImage.createGraphics();
+            this.g2d.setColor(Color.WHITE);
+            this.g2d.fillRect(0, 0, 1000, 800);
+        }
+        else {
+            System.out.println("Initializing whiteboard clear ...");
+            draw("Clean", this.rgbValue, this.lineWidth, new Point(0,0), new Point(0,1), "");
+            
+            JSONObject drawCommand = new JSONObject();
+            drawCommand.put("paint-color", this.rgbValue);
+            drawCommand.put("line-width", this.lineWidth);
+            drawCommand.put("draw-mode", "Clean");
+            Map<String, Integer> firstMap = new HashMap<>();
+            Map<String, Integer> secondMap = new HashMap<>();
+            firstMap.put("x", 0);
+            firstMap.put("y", 0);
+            drawCommand.put("first-point", firstMap);
+            secondMap.put("x", 0);
+            secondMap.put("y", 1);
+            drawCommand.put("second-point", secondMap);
+            drawCommand.put("text-input", "");
+            this.server.multicastDrawing(drawCommand);
+        }
+    }
+
+    public void saveFile(String fileName) {
+        try {
+            writeFile(fileName.isEmpty() ? "whiteboard_SNAPSHOT.png" : fileName);
+        }
+        catch(IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private synchronized void writeFile(String fileName) throws IOException {
+        ImageIO.write(this.bufferedImage, "PNG", new File(fileName));
     }
 
     public void kickUser(String username){
