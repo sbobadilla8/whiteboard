@@ -245,10 +245,10 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        this.remove(imageLabel);
-        this.revalidate();
         try {
-            imageLabel = new JLabel(new ImageIcon(ImageIO.read(new File(fileName))));
+            JLabel newImageLabel = new JLabel(new ImageIcon(ImageIO.read(new File(fileName))));
+            this.remove(imageLabel);
+            imageLabel = newImageLabel;
             this.add(imageLabel);
             this.revalidate();
         } catch (IOException e) {
