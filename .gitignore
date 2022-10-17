@@ -3,3 +3,4 @@ target/
 .idea/
 .fleet/
 *.png
+target*/
