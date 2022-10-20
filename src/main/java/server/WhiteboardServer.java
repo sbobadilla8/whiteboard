@@ -118,6 +118,8 @@ public class WhiteboardServer {
             this.clientList.remove(command.get("disconnected").toString());
             this.usersList.remove(command.get("disconnected").toString());
             multicastUsers(command.get("disconnected").toString());
+            // Since peer has disconnected, we return true
+            return true;
         }
 
         String username = command.get("username").toString();
