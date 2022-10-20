@@ -13,6 +13,7 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.net.Socket;
+import java.net.ConnectException;
 import java.nio.ByteBuffer;
 import java.util.Vector;
 
@@ -81,6 +82,9 @@ public class JoinWhiteboard {
             Thread t2 = new Thread(() -> listenChatServer(chatConn.socket));
             t2.start();
 
+        } catch(ConnectException e) {
+            System.out.println("An error occurred while connecting to the administrator's whiteboard. Check the IP address and try again.");
+            return;
         } catch (IOException | ParseException e) {
             throw new RuntimeException(e);
         }
