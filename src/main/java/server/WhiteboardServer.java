@@ -114,7 +114,12 @@ public class WhiteboardServer {
         // Attempt to convert read data to JSON
         JSONObject command = (JSONObject) parser.parse(readMessage(input));
 
-        int result = 0;
+        if (command.containsKey("disconnected")){
+            this.clientList.remove(command.get("disconnected").toString());
+            this.usersList.remove(command.get("disconnected").toString());
+            multicastUsers(command.get("disconnected").toString());
+        }
+
         String username = command.get("username").toString();
         String drawMode = command.get("draw-mode").toString();
         int rgbValue = Integer.parseInt(command.get("paint-color").toString());

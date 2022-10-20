@@ -89,6 +89,10 @@ public class ChatServer {
         // Attempt to convert read data to JSON
         JSONObject command = (JSONObject) parser.parse(readMessage(input));
 
+        if (command.containsKey("disconnected")){
+            this.clientList.remove(command.get("disconnected").toString());
+        }
+
         String username = command.get("username").toString();
         String message = command.get("message").toString();
 

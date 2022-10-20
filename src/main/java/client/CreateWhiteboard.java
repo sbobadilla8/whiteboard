@@ -30,6 +30,7 @@ public class CreateWhiteboard {
 
         }
 
+        // Shutdown hook for publishing disconnection
         WhiteboardServer finalWhiteboardServer = whiteboardServer;
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             public void run() {

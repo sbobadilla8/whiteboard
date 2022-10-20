@@ -24,7 +24,6 @@ public class JoinWhiteboard {
 
     static Vector connectedUsers;
 
-
     public static void main(String[] args) {
         if (args.length < 1) {
             System.out.println("Invalid arguments, retry the command using the syntax: JoinWhiteBoard <ip> <port> <username>");
@@ -34,7 +33,7 @@ public class JoinWhiteboard {
         try {
             JSONParser parser = new JSONParser();
             System.out.println("Requesting access to whiteboard...");
-            conn = new Connection("localhost", 3000);
+            conn = new Connection(args[1], 3000);
             JSONObject connectionRequest = new JSONObject();
             conn.setUsername(args[0]);
 //            conn.setUsername("user1");
@@ -62,7 +61,7 @@ public class JoinWhiteboard {
             whiteboardUI = new WhiteboardUI("Whiteboard Client - " + args[0], false, conn);
             whiteboardUI.setVisible(true);
 
-            chatConn = new Connection("localhost", 3001);
+            chatConn = new Connection(args[1], 3001);
             chatConn.output.writeUTF(connectionRequest.toJSONString());
             chatConn.output.flush();
             chatConn.input.readUTF();
@@ -85,6 +84,20 @@ public class JoinWhiteboard {
         } catch (IOException | ParseException e) {
             throw new RuntimeException(e);
         }
+
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            public void run() {
+                System.out.println("In shutdown hook");
+                JSONObject disconnectMessage = new JSONObject();
+                disconnectMessage.put("disconnected", conn.getUsername());
+                try {
+                    conn.output.writeUTF(disconnectMessage.toJSONString());
+                    chatConn.output.writeUTF(disconnectMessage.toJSONString());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, "Shutdown-thread"));
     }
 
     public static void listenServer(Socket conn) {
