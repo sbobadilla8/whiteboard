@@ -18,6 +18,8 @@ import java.util.Map;
 
 public class DrawingPanel extends JPanel implements ActionListener, MouseListener, MouseMotionListener, KeyListener {
 
+    private int width;
+    private int height;
     private BufferedImage bufferedImage;
     private Graphics2D g2d;
     private String drawMode;
@@ -36,6 +38,8 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
         this.isAdmin = isAdmin;
         this.textInput = new JTextField(10);
         this.lineWidth = (float) 10.0;
+        this.width = 800;
+        this.height = 800;
         if (!this.isAdmin) {
             this.connection = conn;
             this.fileName = conn.getFilename();
@@ -242,7 +246,7 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
                 case "Clean":
                     System.out.println("Clearing whiteboard ...");
                     this.g2d.setColor(Color.WHITE);
-                    this.g2d.fillRect(0, 0, 1000, 800);
+                    this.g2d.fillRect(0, 0, this.width, this.height);
                     break;
             }
         }
@@ -267,10 +271,10 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
     public void initializeBlankCanvas(Boolean overwriteExisting) {
         if(!overwriteExisting) {
             System.out.println("Initializing buffered image ...");
-            this.bufferedImage = new BufferedImage(1000, 800, BufferedImage.TYPE_INT_ARGB);
+            this.bufferedImage = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_ARGB);
             this.g2d = this.bufferedImage.createGraphics();
             this.g2d.setColor(Color.WHITE);
-            this.g2d.fillRect(0, 0, 1000, 800);
+            this.g2d.fillRect(0, 0, this.width, this.height);
         }
         else {
             System.out.println("Initializing whiteboard clear ...");
