@@ -70,7 +70,7 @@ public class ChatServer {
             System.out.println("CLIENT: " + clientName);
 
             output.writeUTF("Client " + clientName + " successfully subscribed to chat");
-
+            output.flush();
             boolean isPeerTerminated = false;
             // Receive more data..
             while (!isPeerTerminated) {

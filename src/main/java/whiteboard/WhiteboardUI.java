@@ -60,51 +60,97 @@ public class WhiteboardUI extends JFrame implements ActionListener {
         if (isAdmin) {
             filePopup.add(new JMenuItem(new AbstractAction("New") {
                 public void actionPerformed(ActionEvent e) {
-                    int n = JOptionPane.showConfirmDialog(drawingPanel, "This will override all unsaved changes. Do you wish to proceed?", "New File", JOptionPane.YES_NO_OPTION);
+                    Object[] options = {"Save and continue",
+                            "Continue without saving",
+                            "Cancel"};
+                    int n = JOptionPane.showOptionDialog(drawingPanel,
+                            "This will override all unsaved changes. Do you wish to save before opening a new image?", "New File",
+                            JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
                     if (n == 0) {
+                        boolean res = drawingPanel.saveFile("");
+                        if (res) {
+                            JOptionPane.showMessageDialog(mainPanel, "File saved successfully.");
+                            drawingPanel.initializeBlankCanvas(true);
+                        } else {
+                            JOptionPane.showMessageDialog(mainPanel, "Could not save file, try again.");
+                        }
+                    } else if (n == 1) {
                         drawingPanel.initializeBlankCanvas(true);
                     }
                 }
             }));
             filePopup.add(new JMenuItem(new AbstractAction("Open") {
                 public void actionPerformed(ActionEvent e) {
-                    int returnValue = fileChooser.showOpenDialog(mainPanel);
-                    if(returnValue == JFileChooser.APPROVE_OPTION) {
-                        File openedFile = fileChooser.getSelectedFile();
-                        drawingPanel.openFile(openedFile, null);
+                    Object[] options = {"Save and continue",
+                            "Continue without saving",
+                            "Cancel"};
+                    int n = JOptionPane.showOptionDialog(drawingPanel,
+                            "This will override all unsaved changes. Do you wish to save before opening a new image?", "Open File",
+                            JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+                    if (n == 0) {
+                        boolean res = drawingPanel.saveFile("");
+                        if (res) {
+                            JOptionPane.showMessageDialog(mainPanel, "File saved successfully.");
+                            int returnValue = fileChooser.showOpenDialog(mainPanel);
+                            if (returnValue == JFileChooser.APPROVE_OPTION) {
+                                File openedFile = fileChooser.getSelectedFile();
+                                drawingPanel.openFile(openedFile, null);
+                            }
+                        } else {
+                            JOptionPane.showMessageDialog(mainPanel, "Could not save file, try again.");
+                        }
+                    } else if (n == 1) {
+                        int returnValue = fileChooser.showOpenDialog(mainPanel);
+                        if (returnValue == JFileChooser.APPROVE_OPTION) {
+                            File openedFile = fileChooser.getSelectedFile();
+                            drawingPanel.openFile(openedFile, null);
+                        }
                     }
                 }
             }));
             filePopup.add(new JMenuItem(new AbstractAction("Save") {
                 public void actionPerformed(ActionEvent e) {
-                    drawingPanel.saveFile("");
-                    JOptionPane.showMessageDialog(mainPanel, "File saved successfully.");
+                    boolean res = drawingPanel.saveFile("");
+                    if (res) {
+                        JOptionPane.showMessageDialog(mainPanel, "File saved successfully.");
+                    } else {
+                        JOptionPane.showMessageDialog(mainPanel, "Could not save file, try again.");
+                    }
                 }
             }));
             filePopup.add(new JMenuItem(new AbstractAction("Save As") {
                 public void actionPerformed(ActionEvent e) {
                     int returnValue = fileChooser.showSaveDialog(mainPanel);
-                    if(returnValue == JFileChooser.APPROVE_OPTION) {
+                    if (returnValue == JFileChooser.APPROVE_OPTION) {
                         String customSaveFileName = fileChooser.getSelectedFile().getName();
-                        drawingPanel.saveFile(customSaveFileName);
-                        JOptionPane.showMessageDialog(mainPanel, "File saved successfully.");
+                        boolean res = drawingPanel.saveFile(customSaveFileName);
+                        if (res) {
+                            JOptionPane.showMessageDialog(mainPanel, "File saved successfully.");
+                        } else {
+                            JOptionPane.showMessageDialog(mainPanel, "Could not save file, try again.");
+                        }
                     }
-                    /*String customSaveFileName = JOptionPane.showInputDialog(drawingPanel, "Enter file name to save as", "whiteboard_SNAPSHOT.png");
-                    if(customSaveFileName != null) {
-                        drawingPanel.saveFile(customSaveFileName);
-                        JOptionPane.showMessageDialog(mainPanel, "File saved successfully.");
-                    }*/
                 }
             }));
             filePopup.add(new JMenuItem(new AbstractAction("Close") {
                 public void actionPerformed(ActionEvent e) {
-                    int n = JOptionPane.showConfirmDialog(drawingPanel, "All clients will be disconnected, and unsaved changes will be lost. Do you wish to proceed?", "Close Whiteboard", JOptionPane.YES_NO_OPTION);
+                    Object[] options = {"Save and exit",
+                            "Exit without saving",
+                            "Cancel"};
+                    int n = JOptionPane.showOptionDialog(drawingPanel,
+                            "You will lose all unsaved changes. Do you wish to save before exiting?", "Close",
+                            JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
                     if (n == 0) {
-                        System.out.println("Goodbye");
-                        //drawingPanel.getServer().killAll();
+                        boolean res = drawingPanel.saveFile("");
+                        if (res) {
+                            JOptionPane.showMessageDialog(mainPanel, "File saved successfully.");
+                            System.exit(0);
+                        } else {
+                            JOptionPane.showMessageDialog(mainPanel, "Could not save file, try again.");
+                        }
+                    } else if (n == 1) {
                         System.exit(0);
                     }
-
                 }
             }));
         }

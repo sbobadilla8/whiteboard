@@ -43,14 +43,17 @@ public class JoinWhiteboard {
             conn.output.flush();
             // Read hello from server.
             JSONObject response = (JSONObject) parser.parse(conn.input.readUTF());
-            System.out.println("Server Response: "+response.toString());
-            if (response.get("result").toString().equals("rejected")){
+            System.out.println("Server Response: " + response.toString());
+            if (response.get("result").toString().equals("rejected")) {
                 System.out.println("Admin rejected the connection :(");
+                return;
+            } else if (response.get("result").toString().equals("duplicated")) {
+                System.out.println("Username is already being used, please choose a different one and try again.");
                 return;
             }
 
             JSONObject fileNameObj = (JSONObject) parser.parse(conn.input.readUTF());
-            System.out.println("File Name: "+fileNameObj.get("fileName").toString());
+            System.out.println("File Name: " + fileNameObj.get("fileName").toString());
             byte[] sizeArr = new byte[4];
             conn.input.read(sizeArr);
             int size = ByteBuffer.wrap(sizeArr).asIntBuffer().get();
@@ -83,7 +86,7 @@ public class JoinWhiteboard {
             Thread t2 = new Thread(() -> listenChatServer(chatConn.socket));
             t2.start();
 
-        } catch(ConnectException e) {
+        } catch (ConnectException e) {
             System.out.println("An error occurred while connecting to the administrator's whiteboard. Check the IP address and try again.");
             return;
         } catch (IOException | ParseException e) {
@@ -97,7 +100,9 @@ public class JoinWhiteboard {
                 disconnectMessage.put("disconnected", conn.getUsername());
                 try {
                     conn.output.writeUTF(disconnectMessage.toJSONString());
+                    conn.output.flush();
                     chatConn.output.writeUTF(disconnectMessage.toJSONString());
+                    chatConn.output.flush();
                     File currentFile = new File(whiteboardUI.getDrawingPanel().getFileName());
                     currentFile.delete();
                 } catch (IOException e) {
@@ -129,21 +134,20 @@ public class JoinWhiteboard {
         JSONObject command = null;
         try {
             command = (JSONObject) parser.parse(input.readUTF());
-            System.out.println(command);
-            if (command.containsKey("killall")){
+            if (command.containsKey("killall")) {
                 JOptionPane.showMessageDialog(whiteboardUI, "Admin closed");
                 System.exit(0);
             }
-            if (command.containsKey("kicked")){
+            if (command.containsKey("kicked")) {
                 JOptionPane.showMessageDialog(whiteboardUI, "You have been kicked");
                 System.exit(0);
             }
-            if (command.containsKey("new-user")){
+            if (command.containsKey("new-user")) {
                 connectedUsers.add(command.get("new-user").toString());
                 whiteboardUI.getConnectedUsers().setListData(connectedUsers);
                 return false;
             }
-            if (command.containsKey("removed-user")){
+            if (command.containsKey("removed-user")) {
                 String userRemoved = command.get("removed-user").toString();
                 connectedUsers.remove(userRemoved);
                 whiteboardUI.getConnectedUsers().setListData(connectedUsers);
@@ -152,7 +156,7 @@ public class JoinWhiteboard {
             if (command.containsKey("username") && command.get("username").toString().equals(conn.getUsername())) {
                 return false;
             }
-            if(command.containsKey("fileName")) {
+            if (command.containsKey("fileName")) {
                 byte[] sizeArr = new byte[4];
                 conn.input.read(sizeArr);
                 int size = ByteBuffer.wrap(sizeArr).asIntBuffer().get();
@@ -160,8 +164,7 @@ public class JoinWhiteboard {
                 conn.input.read(imageArr);
                 BufferedImage newImage = ImageIO.read(new ByteArrayInputStream(imageArr));
                 whiteboardUI.getDrawingPanel().openFile(null, newImage);
-            }
-            else {
+            } else {
                 String drawMode = command.get("draw-mode").toString();
                 int rgbValue = Integer.parseInt(command.get("paint-color").toString());
                 float lineWidth = Float.parseFloat(command.get("line-width").toString());

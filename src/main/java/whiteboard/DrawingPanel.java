@@ -269,7 +269,7 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
     public void initializeBlankCanvas(Boolean overwriteExisting) {
         if(!overwriteExisting) {
             System.out.println("Initializing buffered image ...");
-            this.bufferedImage = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_ARGB);
+            this.bufferedImage = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
             this.g2d = this.bufferedImage.createGraphics();
             this.g2d.setColor(Color.WHITE);
             this.g2d.fillRect(0, 0, this.width, this.height);
@@ -277,7 +277,6 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
         else {
             System.out.println("Initializing whiteboard clear ...");
             draw("Clean", this.rgbValue, this.lineWidth, new Point(0,0), new Point(0,1), "");
-            
             JSONObject drawCommand = new JSONObject();
             drawCommand.put("paint-color", this.rgbValue);
             drawCommand.put("line-width", this.lineWidth);
@@ -295,9 +294,9 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
         }
     }
 
-    public void saveFile(String fileName) {
+    public boolean saveFile(String fileName) {
         try {
-            writeFile(fileName.isEmpty() ? "whiteboard_SNAPSHOT.png" : fileName);
+            return writeFile(fileName.isEmpty() ? "whiteboard_SNAPSHOT.png" : fileName);
         }
         catch(IOException e) {
             throw new RuntimeException(e);
@@ -321,9 +320,9 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
         }
     }
 
-    private synchronized void writeFile(String fileName) throws IOException {
+    private synchronized boolean writeFile(String fileName) throws IOException {
         String extension = ImageFilter.getExtension(fileName);
-        ImageIO.write(this.bufferedImage, extension, new File(fileName));
+        return ImageIO.write(this.bufferedImage, extension, new File(fileName));
     }
 
     public void kickUser(String username){

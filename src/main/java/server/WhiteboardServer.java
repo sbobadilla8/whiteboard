@@ -54,8 +54,10 @@ public class WhiteboardServer {
                         JSONObject command = (JSONObject) parser.parse(clientName);
                         JSONObject resultMessage = new JSONObject();
                         String username = command.get("client-name").toString();
-                        if (this.usernamesList.contains(username)){
-                            resultMessage.put("result", "Duplicated username, please choose a different one");
+                        if (this.usernamesList.contains(username)) {
+                            resultMessage.put("result", "duplicated");
+                            output.writeUTF(resultMessage.toJSONString());
+                            output.flush();
                         } else {
                             int n = JOptionPane.showConfirmDialog(whiteboard, "New user applying for connection! Admit " + command.get("client-name").toString() + "?", "New connection request", JOptionPane.YES_NO_OPTION);
                             if (n == 0) {
@@ -122,10 +124,11 @@ public class WhiteboardServer {
         JSONObject command = (JSONObject) parser.parse(readMessage(input));
 
         if (command.containsKey("disconnected")) {
-            this.clientList.remove(command.get("disconnected").toString());
-            this.usernamesList.remove(command.get("disconnected").toString());
+            String usernameDis = command.get("disconnected").toString();
+            this.clientList.remove(usernameDis);
+            this.usernamesList.remove(usernameDis);
             this.connectedUsersList.setListData(usernamesList);
-            multicastUsers(command.get("disconnected").toString());
+            multicastUsers(usernameDis);
             // Since peer has disconnected, we return true
             return true;
         }
@@ -170,8 +173,7 @@ public class WhiteboardServer {
             try {
                 DataOutputStream output = new DataOutputStream(conn.getOutputStream());
                 sendImage(output, fileName);
-            }
-            catch(IOException e) {
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         });
@@ -197,17 +199,19 @@ public class WhiteboardServer {
     public void multicastUsers(String username) {
         this.connectedUsersList.setListData(usernamesList);
         this.clientList.forEach((user, conn) -> {
-            try {
-                DataOutputStream output = new DataOutputStream(conn.getOutputStream());
-                JSONObject removedUser = new JSONObject();
-                removedUser.put("removed-user", username);
-                output.writeUTF(removedUser.toJSONString());
-                output.flush();
-            } catch (IOException e) {
-                System.out.println("Client disconnected");
-                this.clientList.remove(user);
-                this.usernamesList.remove(user);
-                multicastUsers(user);
+            if (!user.equals(username)) {
+                try {
+                    DataOutputStream output = new DataOutputStream(conn.getOutputStream());
+                    JSONObject removedUser = new JSONObject();
+                    removedUser.put("removed-user", username);
+                    output.writeUTF(removedUser.toJSONString());
+                    output.flush();
+                } catch (IOException e) {
+                    System.out.println("Client disconnected in multicast of disconnection");
+                    this.clientList.remove(user);
+                    this.usernamesList.remove(user);
+                    multicastUsers(user);
+                }
             }
         });
     }
@@ -230,7 +234,6 @@ public class WhiteboardServer {
     }
 
     public void kickUser(String username) {
-        System.out.println(this.clientList);
         Socket client = this.clientList.get(username);
         try {
             DataOutputStream outputStream = new DataOutputStream(client.getOutputStream());
@@ -241,6 +244,7 @@ public class WhiteboardServer {
             client.close();
             this.clientList.remove(username);
             this.usernamesList.remove(username);
+            multicastUsers(username);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -278,7 +282,7 @@ public class WhiteboardServer {
         JSONObject fileNameObj = new JSONObject();
         fileNameObj.put("fileName", fileName);
         output.writeUTF(fileNameObj.toJSONString());
-
+        output.flush();
         BufferedImage image = ImageIO.read(new File(fileName));
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -286,6 +290,7 @@ public class WhiteboardServer {
 
         byte[] size = ByteBuffer.allocate(4).putInt(byteArrayOutputStream.size()).array();
         output.write(size);
+        output.flush();
         output.write(byteArrayOutputStream.toByteArray());
         output.flush();
     }
