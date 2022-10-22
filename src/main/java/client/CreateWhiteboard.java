@@ -4,6 +4,8 @@ import server.ChatServer;
 import server.WhiteboardServer;
 import whiteboard.WhiteboardUI;
 
+import javax.swing.*;
+import java.io.File;
 import java.io.IOException;
 
 public class CreateWhiteboard {
@@ -30,11 +32,16 @@ public class CreateWhiteboard {
 
         }
 
+        // Shutdown hook for publishing disconnection
         WhiteboardServer finalWhiteboardServer = whiteboardServer;
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             public void run() {
                 System.out.println("In shutdown hook");
                 finalWhiteboardServer.killAll();
+                //if(!frame.getDrawingPanel().getIsFileOpened()) {
+                    File currentFile = new File(frame.getDrawingPanel().getFileName());
+                    currentFile.delete();
+                //}
             }
         }, "Shutdown-thread"));
     }

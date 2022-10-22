@@ -70,7 +70,7 @@ public class ChatServer {
             System.out.println("CLIENT: " + clientName);
 
             output.writeUTF("Client " + clientName + " successfully subscribed to chat");
-
+            output.flush();
             boolean isPeerTerminated = false;
             // Receive more data..
             while (!isPeerTerminated) {
@@ -88,6 +88,12 @@ public class ChatServer {
         JSONParser parser = new JSONParser();
         // Attempt to convert read data to JSON
         JSONObject command = (JSONObject) parser.parse(readMessage(input));
+
+        if (command.containsKey("disconnected")){
+            this.clientList.remove(command.get("disconnected").toString());
+            // Since client has disconnected, we return true
+            return true;
+        }
 
         String username = command.get("username").toString();
         String message = command.get("message").toString();

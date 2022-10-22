@@ -7,6 +7,7 @@ import com.intellij.uiDesigner.core.GridLayoutManager;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 
 public class WhiteboardUI extends JFrame implements ActionListener {
     private JPanel mainPanel;
@@ -32,12 +33,15 @@ public class WhiteboardUI extends JFrame implements ActionListener {
     private DrawingPanel drawingPanel;
     private Chat chat;
 
+    private JFileChooser fileChooser;
+
 
     public WhiteboardUI(String title, Boolean isAdmin, Connection conn) {
 
         super(title);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setPreferredSize(new Dimension(1400, 900));
+        this.setResizable(false);
+        this.setPreferredSize(new Dimension(1225, 700));
         this.setContentPane(mainPanel);
         this.drawingPanel = new DrawingPanel(isAdmin, conn);
         this.drawingPanelContainer.add(drawingPanel);
@@ -47,16 +51,109 @@ public class WhiteboardUI extends JFrame implements ActionListener {
         final JPopupMenu colorPopup = new JPopupMenu();
         final JPopupMenu lineWidthPopup = new JPopupMenu();
 
-        filePopup.add(new JMenuItem(new AbstractAction("Option 1") {
-            public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(mainPanel, "Option 1 selected");
-            }
-        }));
-        filePopup.add(new JMenuItem(new AbstractAction("Option 2") {
-            public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(mainPanel, "Option 2 selected");
-            }
-        }));
+        this.fileChooser = new JFileChooser();
+        this.fileChooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
+        this.fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        this.fileChooser.addChoosableFileFilter(new ImageFilter());
+        this.fileChooser.setAcceptAllFileFilterUsed(false);
+
+        if (isAdmin) {
+            filePopup.add(new JMenuItem(new AbstractAction("New") {
+                public void actionPerformed(ActionEvent e) {
+                    Object[] options = {"Save and continue",
+                            "Continue without saving",
+                            "Cancel"};
+                    int n = JOptionPane.showOptionDialog(drawingPanel,
+                            "This will override all unsaved changes. Do you wish to save before opening a new image?", "New File",
+                            JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+                    if (n == 0) {
+                        boolean res = drawingPanel.saveFile("");
+                        if (res) {
+                            JOptionPane.showMessageDialog(mainPanel, "File saved successfully.");
+                            drawingPanel.initializeBlankCanvas(true);
+                        } else {
+                            JOptionPane.showMessageDialog(mainPanel, "Could not save file, try again.");
+                        }
+                    } else if (n == 1) {
+                        drawingPanel.initializeBlankCanvas(true);
+                    }
+                }
+            }));
+            filePopup.add(new JMenuItem(new AbstractAction("Open") {
+                public void actionPerformed(ActionEvent e) {
+                    Object[] options = {"Save and continue",
+                            "Continue without saving",
+                            "Cancel"};
+                    int n = JOptionPane.showOptionDialog(drawingPanel,
+                            "This will override all unsaved changes. Do you wish to save before opening a new image?", "Open File",
+                            JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+                    if (n == 0) {
+                        boolean res = drawingPanel.saveFile("");
+                        if (res) {
+                            JOptionPane.showMessageDialog(mainPanel, "File saved successfully.");
+                            int returnValue = fileChooser.showOpenDialog(mainPanel);
+                            if (returnValue == JFileChooser.APPROVE_OPTION) {
+                                File openedFile = fileChooser.getSelectedFile();
+                                drawingPanel.openFile(openedFile, null);
+                            }
+                        } else {
+                            JOptionPane.showMessageDialog(mainPanel, "Could not save file, try again.");
+                        }
+                    } else if (n == 1) {
+                        int returnValue = fileChooser.showOpenDialog(mainPanel);
+                        if (returnValue == JFileChooser.APPROVE_OPTION) {
+                            File openedFile = fileChooser.getSelectedFile();
+                            drawingPanel.openFile(openedFile, null);
+                        }
+                    }
+                }
+            }));
+            filePopup.add(new JMenuItem(new AbstractAction("Save") {
+                public void actionPerformed(ActionEvent e) {
+                    boolean res = drawingPanel.saveFile("");
+                    if (res) {
+                        JOptionPane.showMessageDialog(mainPanel, "File saved successfully.");
+                    } else {
+                        JOptionPane.showMessageDialog(mainPanel, "Could not save file, try again.");
+                    }
+                }
+            }));
+            filePopup.add(new JMenuItem(new AbstractAction("Save As") {
+                public void actionPerformed(ActionEvent e) {
+                    int returnValue = fileChooser.showSaveDialog(mainPanel);
+                    if (returnValue == JFileChooser.APPROVE_OPTION) {
+                        String customSaveFileName = fileChooser.getSelectedFile().getName();
+                        boolean res = drawingPanel.saveFile(customSaveFileName);
+                        if (res) {
+                            JOptionPane.showMessageDialog(mainPanel, "File saved successfully.");
+                        } else {
+                            JOptionPane.showMessageDialog(mainPanel, "Could not save file, try again.");
+                        }
+                    }
+                }
+            }));
+            filePopup.add(new JMenuItem(new AbstractAction("Close") {
+                public void actionPerformed(ActionEvent e) {
+                    Object[] options = {"Save and exit",
+                            "Exit without saving",
+                            "Cancel"};
+                    int n = JOptionPane.showOptionDialog(drawingPanel,
+                            "You will lose all unsaved changes. Do you wish to save before exiting?", "Close",
+                            JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+                    if (n == 0) {
+                        boolean res = drawingPanel.saveFile("");
+                        if (res) {
+                            JOptionPane.showMessageDialog(mainPanel, "File saved successfully.");
+                            System.exit(0);
+                        } else {
+                            JOptionPane.showMessageDialog(mainPanel, "Could not save file, try again.");
+                        }
+                    } else if (n == 1) {
+                        System.exit(0);
+                    }
+                }
+            }));
+        }
 
         btnFile.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
@@ -89,11 +186,13 @@ public class WhiteboardUI extends JFrame implements ActionListener {
             @Override
             public void mouseClicked(MouseEvent e) {
                 String username = connectedUsers.getSelectedValue().toString();
-//                chat.kickUser(username);
-                drawingPanel.kickUser(username);
+                if (!username.equals("Admin")) {
+                    drawingPanel.kickUser(username);
+                }
             }
         });
 
+        btnFile.setVisible(isAdmin);
         btnKick.setVisible(isAdmin);
         btnKick.setText("Kick user");
 
@@ -320,28 +419,21 @@ public class WhiteboardUI extends JFrame implements ActionListener {
         panel1.add(btnLineWidth, new GridConstraints(0, 7, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel2 = new JPanel();
         panel2.setLayout(new GridLayoutManager(1, 3, new Insets(0, 0, 0, 0), -1, -1));
-        mainPanel.add(panel2, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        mainPanel.add(panel2, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_NORTHWEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         connectedUsersContainer = new JPanel();
-        connectedUsersContainer.setLayout(new GridLayoutManager(2, 1, new Insets(0, 0, 0, 0), -1, -1));
-        panel2.add(connectedUsersContainer, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        connectedUsersContainer.setLayout(new GridLayoutManager(2, 1, new Insets(0, 5, 0, 0), -1, -1));
+        panel2.add(connectedUsersContainer, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_NORTHWEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         btnKick = new JButton();
         btnKick.setText("Kick user");
         connectedUsersContainer.add(btnKick, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         connectedUsers = new JList();
-        connectedUsersContainer.add(connectedUsers, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
+        connectedUsersContainer.add(connectedUsers, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_NORTH, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, 600), null, 0, false));
         drawingPanelContainer = new JPanel();
         drawingPanelContainer.setLayout(new GridBagLayout());
-        panel2.add(drawingPanelContainer, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, new Dimension(1000, 800), null, null, 1, false));
+        panel2.add(drawingPanelContainer, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_NORTHWEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(800, 600), new Dimension(800, 600), new Dimension(800, 600), 1, false));
         chatContainer = new JPanel();
         chatContainer.setLayout(new GridLayoutManager(2, 1, new Insets(0, 0, 0, 0), -1, -1));
-        panel2.add(chatContainer, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        chatScrollContainer = new JScrollPane();
-        chatScrollContainer.setVerticalScrollBarPolicy(22);
-        chatContainer.add(chatScrollContainer, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
-        chatPanel = new JEditorPane();
-        chatPanel.setContentType("text/html");
-        chatPanel.setMaximumSize(new Dimension(100, 1000));
-        chatScrollContainer.setViewportView(chatPanel);
+        panel2.add(chatContainer, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_NORTHWEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(-1, 625), null, 0, false));
         final JPanel panel3 = new JPanel();
         panel3.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
         chatContainer.add(panel3, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
@@ -350,6 +442,12 @@ public class WhiteboardUI extends JFrame implements ActionListener {
         btnSend = new JButton();
         btnSend.setText("Send");
         panel3.add(btnSend, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        chatScrollContainer = new JScrollPane();
+        chatContainer.add(chatScrollContainer, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        chatPanel = new JEditorPane();
+        chatPanel.setContentType("text/html");
+        chatPanel.setEditable(false);
+        chatScrollContainer.setViewportView(chatPanel);
     }
 
     /**
