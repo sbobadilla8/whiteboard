@@ -91,6 +91,8 @@ public class ChatServer {
 
         if (command.containsKey("disconnected")){
             this.clientList.remove(command.get("disconnected").toString());
+            // Since client has disconnected, we return true
+            return true;
         }
 
         String username = command.get("username").toString();
