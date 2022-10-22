@@ -37,7 +37,8 @@ public class WhiteboardUI extends JFrame implements ActionListener {
 
         super(title);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setPreferredSize(new Dimension(1400, 900));
+        this.setResizable(false);
+        this.setPreferredSize(new Dimension(1225, 700));
         this.setContentPane(mainPanel);
         this.drawingPanel = new DrawingPanel(isAdmin, conn);
         this.drawingPanelContainer.add(drawingPanel);
@@ -47,11 +48,11 @@ public class WhiteboardUI extends JFrame implements ActionListener {
         final JPopupMenu colorPopup = new JPopupMenu();
         final JPopupMenu lineWidthPopup = new JPopupMenu();
 
-        if(isAdmin) {
+        if (isAdmin) {
             filePopup.add(new JMenuItem(new AbstractAction("New") {
                 public void actionPerformed(ActionEvent e) {
                     int n = JOptionPane.showConfirmDialog(drawingPanel, "This will override all unsaved changes. Do you wish to proceed?", "New File", JOptionPane.YES_NO_OPTION);
-                    if(n == 0) {
+                    if (n == 0) {
                         drawingPanel.initializeBlankCanvas(true);
                     }
                 }
@@ -71,7 +72,7 @@ public class WhiteboardUI extends JFrame implements ActionListener {
                 public void actionPerformed(ActionEvent e) {
                     String customSaveFileName = (String) JOptionPane.showInputDialog(drawingPanel, "Enter file name to save as", "whiteboard_SNAPSHOT.png");
                     System.out.println(customSaveFileName);
-                    if(customSaveFileName != null) {
+                    if (customSaveFileName != null) {
                         drawingPanel.saveFile(customSaveFileName);
                         JOptionPane.showMessageDialog(mainPanel, "File saved successfully.");
                     }
@@ -80,7 +81,7 @@ public class WhiteboardUI extends JFrame implements ActionListener {
             filePopup.add(new JMenuItem(new AbstractAction("Close") {
                 public void actionPerformed(ActionEvent e) {
                     int n = JOptionPane.showConfirmDialog(drawingPanel, "All clients will be disconnected, and unsaved changes will be lost. Do you wish to proceed?", "Close Whiteboard", JOptionPane.YES_NO_OPTION);
-                    if(n == 0 ) {
+                    if (n == 0) {
                         System.out.println("Goodbye");
                         //drawingPanel.getServer().killAll();
                         System.exit(0);
@@ -121,8 +122,9 @@ public class WhiteboardUI extends JFrame implements ActionListener {
             @Override
             public void mouseClicked(MouseEvent e) {
                 String username = connectedUsers.getSelectedValue().toString();
-//                chat.kickUser(username);
-                drawingPanel.kickUser(username);
+                if (!username.equals("Admin")) {
+                    drawingPanel.kickUser(username);
+                }
             }
         });
 
@@ -353,28 +355,21 @@ public class WhiteboardUI extends JFrame implements ActionListener {
         panel1.add(btnLineWidth, new GridConstraints(0, 7, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel2 = new JPanel();
         panel2.setLayout(new GridLayoutManager(1, 3, new Insets(0, 0, 0, 0), -1, -1));
-        mainPanel.add(panel2, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        mainPanel.add(panel2, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_NORTHWEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         connectedUsersContainer = new JPanel();
-        connectedUsersContainer.setLayout(new GridLayoutManager(2, 1, new Insets(0, 0, 0, 0), -1, -1));
-        panel2.add(connectedUsersContainer, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        connectedUsersContainer.setLayout(new GridLayoutManager(2, 1, new Insets(0, 5, 0, 0), -1, -1));
+        panel2.add(connectedUsersContainer, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_NORTHWEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         btnKick = new JButton();
         btnKick.setText("Kick user");
         connectedUsersContainer.add(btnKick, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         connectedUsers = new JList();
-        connectedUsersContainer.add(connectedUsers, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
+        connectedUsersContainer.add(connectedUsers, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_NORTH, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, 600), null, 0, false));
         drawingPanelContainer = new JPanel();
         drawingPanelContainer.setLayout(new GridBagLayout());
-        panel2.add(drawingPanelContainer, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, new Dimension(1000, 800), null, null, 1, false));
+        panel2.add(drawingPanelContainer, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_NORTHWEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(800, 600), new Dimension(800, 600), new Dimension(800, 600), 1, false));
         chatContainer = new JPanel();
         chatContainer.setLayout(new GridLayoutManager(2, 1, new Insets(0, 0, 0, 0), -1, -1));
-        panel2.add(chatContainer, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        chatScrollContainer = new JScrollPane();
-        chatScrollContainer.setVerticalScrollBarPolicy(22);
-        chatContainer.add(chatScrollContainer, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
-        chatPanel = new JEditorPane();
-        chatPanel.setContentType("text/html");
-        chatPanel.setMaximumSize(new Dimension(100, 1000));
-        chatScrollContainer.setViewportView(chatPanel);
+        panel2.add(chatContainer, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_NORTHWEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(-1, 625), null, 0, false));
         final JPanel panel3 = new JPanel();
         panel3.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
         chatContainer.add(panel3, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
@@ -383,6 +378,12 @@ public class WhiteboardUI extends JFrame implements ActionListener {
         btnSend = new JButton();
         btnSend.setText("Send");
         panel3.add(btnSend, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        chatScrollContainer = new JScrollPane();
+        chatContainer.add(chatScrollContainer, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        chatPanel = new JEditorPane();
+        chatPanel.setContentType("text/html");
+        chatPanel.setEditable(false);
+        chatScrollContainer.setViewportView(chatPanel);
     }
 
     /**

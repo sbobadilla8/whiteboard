@@ -39,7 +39,7 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
         this.textInput = new JTextField(10);
         this.lineWidth = (float) 10.0;
         this.width = 800;
-        this.height = 800;
+        this.height = 600;
         if (!this.isAdmin) {
             this.connection = conn;
             this.fileName = conn.getFilename();

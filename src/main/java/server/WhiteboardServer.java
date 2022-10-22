@@ -33,6 +33,7 @@ public class WhiteboardServer {
         this.fileName = fileName;
         this.whiteboard = whiteboard;
         this.usersList = new Vector<>();
+        this.usersList.add("Admin");
         ServerSocketFactory factory = ServerSocketFactory.getDefault();
         try {
             this.whiteboardSocket = factory.createServerSocket(3000);
@@ -262,6 +263,7 @@ public class WhiteboardServer {
 
     public void setConnectedUsersList(JList connectedUsersList) {
         this.connectedUsersList = connectedUsersList;
+        this.connectedUsersList.setListData(usersList);
     }
 
     public void sendImage(DataOutputStream output) throws IOException {

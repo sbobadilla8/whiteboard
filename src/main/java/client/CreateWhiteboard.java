@@ -4,6 +4,7 @@ import server.ChatServer;
 import server.WhiteboardServer;
 import whiteboard.WhiteboardUI;
 
+import javax.swing.*;
 import java.io.IOException;
 
 public class CreateWhiteboard {
