@@ -43,6 +43,7 @@ public class JoinWhiteboard {
             conn.output.flush();
             // Read hello from server.
             JSONObject response = (JSONObject) parser.parse(conn.input.readUTF());
+            System.out.println("Server Response: "+response.toString());
             if (response.get("result").toString().equals("rejected")){
                 System.out.println("Admin rejected the connection :(");
                 return;
@@ -57,7 +58,8 @@ public class JoinWhiteboard {
             byte[] imageArr = new byte[size];
             conn.input.read(imageArr);
             BufferedImage initialImage = ImageIO.read(new ByteArrayInputStream(imageArr));
-            conn.setFilename("remoteWhiteboard.png");
+            conn.setFilename(fileNameObj.get("fileName").toString());
+            //conn.setFilename("remoteWhiteboard.png");
             ImageIO.write(initialImage, "png", new File(conn.getFilename()));
             whiteboardUI = new WhiteboardUI("Whiteboard Client - " + args[0], false, conn);
             whiteboardUI.setVisible(true);
@@ -71,7 +73,6 @@ public class JoinWhiteboard {
             JSONObject command = (JSONObject) parser.parse(conn.input.readUTF());
             JSONArray values = (JSONArray) command.get("connected-users");
             whiteboardUI.getChat().setConnection(chatConn);
-            connectedUsers.add("Admin");
             connectedUsers.addAll(values);
             whiteboardUI.getConnectedUsers().setListData(connectedUsers);
 
@@ -97,6 +98,8 @@ public class JoinWhiteboard {
                 try {
                     conn.output.writeUTF(disconnectMessage.toJSONString());
                     chatConn.output.writeUTF(disconnectMessage.toJSONString());
+                    File currentFile = new File(whiteboardUI.getDrawingPanel().getFileName());
+                    currentFile.delete();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -149,21 +152,32 @@ public class JoinWhiteboard {
             if (command.containsKey("username") && command.get("username").toString().equals(conn.getUsername())) {
                 return false;
             }
-            String drawMode = command.get("draw-mode").toString();
-            int rgbValue = Integer.parseInt(command.get("paint-color").toString());
-            float lineWidth = Float.parseFloat(command.get("line-width").toString());
-            String firstPoints = command.get("first-point").toString();
-            JSONObject firstPoint = (JSONObject) parser.parse(firstPoints);
-            int x1 = Integer.parseInt(firstPoint.get("x").toString());
-            int y1 = Integer.parseInt(firstPoint.get("y").toString());
-            Point first = new Point(x1, y1);
-            String secondPoints = command.get("second-point").toString();
-            JSONObject secondPoint = (JSONObject) parser.parse(secondPoints);
-            int x2 = Integer.parseInt(secondPoint.get("x").toString());
-            int y2 = Integer.parseInt(secondPoint.get("y").toString());
-            Point second = new Point(x2, y2);
-            String textInput = command.get("text-input").toString();
-            whiteboardUI.getDrawingPanel().draw(drawMode, rgbValue, lineWidth, first, second, textInput);
+            if(command.containsKey("fileName")) {
+                byte[] sizeArr = new byte[4];
+                conn.input.read(sizeArr);
+                int size = ByteBuffer.wrap(sizeArr).asIntBuffer().get();
+                byte[] imageArr = new byte[size];
+                conn.input.read(imageArr);
+                BufferedImage newImage = ImageIO.read(new ByteArrayInputStream(imageArr));
+                whiteboardUI.getDrawingPanel().openFile(null, newImage);
+            }
+            else {
+                String drawMode = command.get("draw-mode").toString();
+                int rgbValue = Integer.parseInt(command.get("paint-color").toString());
+                float lineWidth = Float.parseFloat(command.get("line-width").toString());
+                String firstPoints = command.get("first-point").toString();
+                JSONObject firstPoint = (JSONObject) parser.parse(firstPoints);
+                int x1 = Integer.parseInt(firstPoint.get("x").toString());
+                int y1 = Integer.parseInt(firstPoint.get("y").toString());
+                Point first = new Point(x1, y1);
+                String secondPoints = command.get("second-point").toString();
+                JSONObject secondPoint = (JSONObject) parser.parse(secondPoints);
+                int x2 = Integer.parseInt(secondPoint.get("x").toString());
+                int y2 = Integer.parseInt(secondPoint.get("y").toString());
+                Point second = new Point(x2, y2);
+                String textInput = command.get("text-input").toString();
+                whiteboardUI.getDrawingPanel().draw(drawMode, rgbValue, lineWidth, first, second, textInput);
+            }
         } catch (ParseException | IOException e) {
             throw new RuntimeException(e);
         }

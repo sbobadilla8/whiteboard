@@ -60,14 +60,16 @@ public class WhiteboardServer {
                             this.multicastNewUser(this.usersList.lastElement().toString());
                             this.clientList.put(command.get("client-name").toString(), client);
                             resultMessage.put("result", "accepted");
+                            output.writeUTF(resultMessage.toJSONString());
+                            output.flush();
                             Socket finalClient = client;
                             Thread t = new Thread(() -> serveClient(finalClient));
                             t.start();
                         } else {
                             resultMessage.put("result", "rejected");
+                            output.writeUTF(resultMessage.toJSONString());
+                            output.flush();
                         }
-                        output.writeUTF(resultMessage.toJSONString());
-                        output.flush();
                     } catch (IOException | ParseException e) {
                         throw new RuntimeException(e);
                     }
@@ -84,7 +86,7 @@ public class WhiteboardServer {
             DataInputStream input = new DataInputStream(clientSocket.getInputStream());
             DataOutputStream output = new DataOutputStream(clientSocket.getOutputStream());
 
-            sendImage(output);
+            sendImage(output, whiteboard.getFileName());
 
             JSONObject userList = new JSONObject();
             JSONArray values = new JSONArray();
@@ -158,11 +160,11 @@ public class WhiteboardServer {
         return false;
     }
 
-    public void multicastImage() {
+    public void multicastImage(String fileName) {
         this.clientList.forEach((user, conn) -> {
             try {
                 DataOutputStream output = new DataOutputStream(conn.getOutputStream());
-                sendImage(output);
+                sendImage(output, fileName);
             }
             catch(IOException e) {
                 throw new RuntimeException(e);
@@ -266,13 +268,13 @@ public class WhiteboardServer {
         this.connectedUsersList.setListData(usersList);
     }
 
-    public void sendImage(DataOutputStream output) throws IOException {
+    public void sendImage(DataOutputStream output, String fileName) throws IOException {
         // The welcome message consists of three parts - the first is the file name, the second is the initial canvas size, the second is the canvas png
         JSONObject fileNameObj = new JSONObject();
-        fileNameObj.put("fileName", whiteboard.getFileName());
+        fileNameObj.put("fileName", fileName);
         output.writeUTF(fileNameObj.toJSONString());
 
-        BufferedImage image = ImageIO.read(new File(this.whiteboard.getFileName()));
+        BufferedImage image = ImageIO.read(new File(fileName));
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         ImageIO.write(image, "png", byteArrayOutputStream);

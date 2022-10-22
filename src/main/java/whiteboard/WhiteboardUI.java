@@ -7,6 +7,7 @@ import com.intellij.uiDesigner.core.GridLayoutManager;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 
 public class WhiteboardUI extends JFrame implements ActionListener {
     private JPanel mainPanel;
@@ -32,6 +33,8 @@ public class WhiteboardUI extends JFrame implements ActionListener {
     private DrawingPanel drawingPanel;
     private Chat chat;
 
+    private JFileChooser fileChooser;
+
 
     public WhiteboardUI(String title, Boolean isAdmin, Connection conn) {
 
@@ -48,6 +51,12 @@ public class WhiteboardUI extends JFrame implements ActionListener {
         final JPopupMenu colorPopup = new JPopupMenu();
         final JPopupMenu lineWidthPopup = new JPopupMenu();
 
+        this.fileChooser = new JFileChooser();
+        this.fileChooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
+        this.fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        this.fileChooser.addChoosableFileFilter(new ImageFilter());
+        this.fileChooser.setAcceptAllFileFilterUsed(false);
+
         if (isAdmin) {
             filePopup.add(new JMenuItem(new AbstractAction("New") {
                 public void actionPerformed(ActionEvent e) {
@@ -59,7 +68,11 @@ public class WhiteboardUI extends JFrame implements ActionListener {
             }));
             filePopup.add(new JMenuItem(new AbstractAction("Open") {
                 public void actionPerformed(ActionEvent e) {
-                    JOptionPane.showMessageDialog(mainPanel, "Option 2 selected");
+                    int returnValue = fileChooser.showOpenDialog(mainPanel);
+                    if(returnValue == JFileChooser.APPROVE_OPTION) {
+                        File openedFile = fileChooser.getSelectedFile();
+                        drawingPanel.openFile(openedFile, null);
+                    }
                 }
             }));
             filePopup.add(new JMenuItem(new AbstractAction("Save") {
@@ -70,12 +83,17 @@ public class WhiteboardUI extends JFrame implements ActionListener {
             }));
             filePopup.add(new JMenuItem(new AbstractAction("Save As") {
                 public void actionPerformed(ActionEvent e) {
-                    String customSaveFileName = (String) JOptionPane.showInputDialog(drawingPanel, "Enter file name to save as", "whiteboard_SNAPSHOT.png");
-                    System.out.println(customSaveFileName);
-                    if (customSaveFileName != null) {
+                    int returnValue = fileChooser.showSaveDialog(mainPanel);
+                    if(returnValue == JFileChooser.APPROVE_OPTION) {
+                        String customSaveFileName = fileChooser.getSelectedFile().getName();
                         drawingPanel.saveFile(customSaveFileName);
                         JOptionPane.showMessageDialog(mainPanel, "File saved successfully.");
                     }
+                    /*String customSaveFileName = JOptionPane.showInputDialog(drawingPanel, "Enter file name to save as", "whiteboard_SNAPSHOT.png");
+                    if(customSaveFileName != null) {
+                        drawingPanel.saveFile(customSaveFileName);
+                        JOptionPane.showMessageDialog(mainPanel, "File saved successfully.");
+                    }*/
                 }
             }));
             filePopup.add(new JMenuItem(new AbstractAction("Close") {

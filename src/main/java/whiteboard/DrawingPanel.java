@@ -1,7 +1,6 @@
 package whiteboard;
 
 import client.Connection;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import server.WhiteboardServer;
 
@@ -12,7 +11,6 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -306,8 +304,26 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
         }
     }
 
+    public synchronized void openFile(File openedFile, BufferedImage newBufferedImage) {
+        try {
+            this.bufferedImage = this.isAdmin ? ImageIO.read(openedFile) : newBufferedImage;
+            this.g2d = this.bufferedImage.createGraphics();
+            JLabel newImageLabel = new JLabel(new ImageIcon(this.bufferedImage));
+            this.remove(imageLabel);
+            imageLabel = newImageLabel;
+            this.add(imageLabel);
+            this.revalidate();
+            if(this.isAdmin) {
+                this.server.multicastImage(openedFile.getName());
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private synchronized void writeFile(String fileName) throws IOException {
-        ImageIO.write(this.bufferedImage, "PNG", new File(fileName));
+        String extension = ImageFilter.getExtension(fileName);
+        ImageIO.write(this.bufferedImage, extension, new File(fileName));
     }
 
     public void kickUser(String username){
