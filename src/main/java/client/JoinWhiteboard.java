@@ -26,6 +26,8 @@ public class JoinWhiteboard {
 
     static Vector connectedUsers;
 
+    static boolean isKicked;
+
     public static void main(String[] args) {
         if (args.length != 3) {
             System.out.println("Invalid arguments, retry the command using the syntax: JoinWhiteBoard <username> <ip> <port>");
@@ -35,6 +37,7 @@ public class JoinWhiteboard {
             System.out.println("Illegal username, please choose a different one");
             System.exit(0);
         }
+        isKicked = false;
         connectedUsers = new Vector<>();
         try {
             JSONParser parser = new JSONParser();
@@ -64,7 +67,7 @@ public class JoinWhiteboard {
             int size = ByteBuffer.wrap(sizeArr).asIntBuffer().get();
 
             byte[] imageArr = new byte[size];
-            conn.input.read(imageArr);
+            conn.input.readFully(imageArr);
             BufferedImage initialImage = ImageIO.read(new ByteArrayInputStream(imageArr));
             conn.setFilename(fileNameObj.get("fileName").toString());
             //conn.setFilename("remoteWhiteboard.png");
@@ -101,14 +104,15 @@ public class JoinWhiteboard {
 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             public void run() {
-                System.out.println("In shutdown hook");
-                JSONObject disconnectMessage = new JSONObject();
-                disconnectMessage.put("disconnected", conn.getUsername());
                 try {
-                    conn.output.writeUTF(disconnectMessage.toJSONString());
-                    conn.output.flush();
-                    chatConn.output.writeUTF(disconnectMessage.toJSONString());
-                    chatConn.output.flush();
+                    if(!isKicked) {
+                        JSONObject disconnectMessage = new JSONObject();
+                        disconnectMessage.put("disconnected", conn.getUsername());
+                        conn.output.writeUTF(disconnectMessage.toJSONString());
+                        conn.output.flush();
+                        chatConn.output.writeUTF(disconnectMessage.toJSONString());
+                        chatConn.output.flush();
+                    }
                     File currentFile = new File(whiteboardUI.getDrawingPanel().getFileName());
                     currentFile.delete();
                 } catch (IOException e) {
@@ -145,7 +149,9 @@ public class JoinWhiteboard {
                 System.exit(0);
             }
             if (command.containsKey("kicked")) {
+                isKicked = true;
                 JOptionPane.showMessageDialog(whiteboardUI, "You have been removed from the whiteboard");
+
                 System.exit(0);
             }
             if (command.containsKey("new-user")) {

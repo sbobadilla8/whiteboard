@@ -75,7 +75,6 @@ public class ChatServer {
 
             String clientName = readMessage(input);
             this.clientList.put(clientName, client);
-            System.out.println("CLIENT: " + clientName);
 
             output.writeUTF("Client " + clientName + " successfully subscribed to chat");
             output.flush();

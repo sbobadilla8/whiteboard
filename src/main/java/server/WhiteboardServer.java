@@ -48,7 +48,6 @@ public class WhiteboardServer {
                     try {
                         client = whiteboardSocket.accept();
                         client.setKeepAlive(true);
-                        System.out.println("Client applying for connection!");
                         JSONParser parser = new JSONParser();
                         DataInputStream input = new DataInputStream(client.getInputStream());
                         DataOutputStream output = new DataOutputStream(client.getOutputStream());
