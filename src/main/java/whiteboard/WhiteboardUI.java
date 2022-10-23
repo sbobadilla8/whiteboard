@@ -8,6 +8,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.io.IOException;
 
 public class WhiteboardUI extends JFrame implements ActionListener {
     private JPanel mainPanel;
@@ -122,7 +123,12 @@ public class WhiteboardUI extends JFrame implements ActionListener {
                 public void actionPerformed(ActionEvent e) {
                     int returnValue = fileChooser.showSaveDialog(mainPanel);
                     if (returnValue == JFileChooser.APPROVE_OPTION) {
-                        String customSaveFileName = fileChooser.getSelectedFile().getName();
+                        String customSaveFileName = null;
+                        try {
+                            customSaveFileName = fileChooser.getSelectedFile().getCanonicalPath();
+                        } catch (IOException ex) {
+                            throw new RuntimeException(ex);
+                        }
                         boolean res = drawingPanel.saveFile(customSaveFileName);
                         if (res) {
                             JOptionPane.showMessageDialog(mainPanel, "File saved successfully.");
@@ -197,7 +203,7 @@ public class WhiteboardUI extends JFrame implements ActionListener {
         btnKick.setText("Kick user");
 
         JSlider lineWidthSlider = new JSlider();
-        lineWidthSlider.setMinimum(0);
+        lineWidthSlider.setMinimum(5);
         lineWidthSlider.setMaximum(40);
         lineWidthSlider.setValue((int) this.drawingPanel.getLineWidth());
         lineWidthSlider.addChangeListener(e -> drawingPanel.setLineWidth(lineWidthSlider.getValue()));

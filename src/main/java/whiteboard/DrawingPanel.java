@@ -208,7 +208,7 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
         this.g2d.setPaint(new Color(rgbValue));
         this.g2d.setStroke(new BasicStroke(lineWidth));
         if (drawMode.equals("Text")) {
-            Font font = new Font("TimesRoman", Font.BOLD, (int) lineWidth);
+            Font font = new Font("TimesRoman", Font.BOLD, (int) lineWidth*2);
             this.g2d.setFont(font);
             this.g2d.drawString(textInput, first.x, first.y);
         } else if (!first.equals(second)) {
@@ -313,8 +313,9 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
             imageLabel = newImageLabel;
             this.add(imageLabel);
             this.revalidate();
+            this.writeFile(this.fileName);
             if(this.isAdmin) {
-                this.server.multicastImage(openedFile.getName());
+                this.server.multicastImage(openedFile.getCanonicalPath());
             }
         } catch (IOException e) {
             System.out.println("Failed to read image from file.");
