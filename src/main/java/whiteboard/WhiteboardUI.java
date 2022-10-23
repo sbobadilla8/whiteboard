@@ -9,6 +9,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.regex.Pattern;
 
 public class WhiteboardUI extends JFrame implements ActionListener {
     private JPanel mainPanel;
@@ -33,7 +34,6 @@ public class WhiteboardUI extends JFrame implements ActionListener {
     private JScrollPane chatScrollContainer;
     private DrawingPanel drawingPanel;
     private Chat chat;
-
     private JFileChooser fileChooser;
 
 
@@ -192,7 +192,9 @@ public class WhiteboardUI extends JFrame implements ActionListener {
             @Override
             public void mouseClicked(MouseEvent e) {
                 String username = connectedUsers.getSelectedValue().toString();
-                if (!username.equals("Admin")) {
+                System.out.println(username);
+                boolean admin = Pattern.matches("\\w+\\s\\(admin\\)", username);
+                if (!admin) {
                     drawingPanel.kickUser(username);
                 }
             }

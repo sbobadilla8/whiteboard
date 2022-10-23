@@ -67,11 +67,11 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
 //        this.setVisible(true);
     }
 
-    public void setServer(WhiteboardServer server){
+    public void setServer(WhiteboardServer server) {
         this.server = server;
     }
 
-    public WhiteboardServer getServer(){
+    public WhiteboardServer getServer() {
         return this.server;
     }
 
@@ -208,7 +208,7 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
         this.g2d.setPaint(new Color(rgbValue));
         this.g2d.setStroke(new BasicStroke(lineWidth));
         if (drawMode.equals("Text")) {
-            Font font = new Font("TimesRoman", Font.BOLD, (int) lineWidth*2);
+            Font font = new Font("TimesRoman", Font.BOLD, (int) lineWidth * 2);
             this.g2d.setFont(font);
             this.g2d.drawString(textInput, first.x, first.y);
         } else if (!first.equals(second)) {
@@ -267,16 +267,15 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
     }
 
     public void initializeBlankCanvas(Boolean overwriteExisting) {
-        if(!overwriteExisting) {
+        if (!overwriteExisting) {
             System.out.println("Initializing buffered image ...");
             this.bufferedImage = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
             this.g2d = this.bufferedImage.createGraphics();
             this.g2d.setColor(Color.WHITE);
             this.g2d.fillRect(0, 0, this.width, this.height);
-        }
-        else {
+        } else {
             System.out.println("Initializing whiteboard clear ...");
-            draw("Clean", this.rgbValue, this.lineWidth, new Point(0,0), new Point(0,1), "");
+            draw("Clean", this.rgbValue, this.lineWidth, new Point(0, 0), new Point(0, 1), "");
             JSONObject drawCommand = new JSONObject();
             drawCommand.put("paint-color", this.rgbValue);
             drawCommand.put("line-width", this.lineWidth);
@@ -297,8 +296,7 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
     public boolean saveFile(String fileName) {
         try {
             return writeFile(fileName.isEmpty() ? "whiteboard_SNAPSHOT.png" : fileName);
-        }
-        catch(IOException e) {
+        } catch (IOException e) {
             System.out.println("Failed to save changes to the file.");
             return false;
         }
@@ -314,7 +312,7 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
             this.add(imageLabel);
             this.revalidate();
             this.writeFile(this.fileName);
-            if(this.isAdmin) {
+            if (this.isAdmin) {
                 this.server.multicastImage(openedFile.getCanonicalPath());
             }
         } catch (IOException e) {
@@ -324,10 +322,14 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
 
     private synchronized boolean writeFile(String fileName) throws IOException {
         String extension = ImageFilter.getExtension(fileName);
+        if (extension == null){
+            extension = "png";
+            fileName += ".png";
+        }
         return ImageIO.write(this.bufferedImage, extension, new File(fileName));
     }
 
-    public void kickUser(String username){
+    public void kickUser(String username) {
         this.server.kickUser(username);
     }
 

@@ -25,17 +25,19 @@ public class WhiteboardServer {
     private DrawingPanel whiteboard;
     private JList connectedUsersList;
     private Vector usernamesList;
+    private int chatPort;
+    private String admin;
 
 
-    public WhiteboardServer(String fileName, DrawingPanel whiteboard) throws IOException {
+    public WhiteboardServer(String fileName, DrawingPanel whiteboard, String adminUsername, int port) throws IOException {
         this.clientList = new ConcurrentHashMap<>();
         this.fileName = fileName;
         this.whiteboard = whiteboard;
         this.usernamesList = new Vector<>();
-        this.usernamesList.add("Admin");
+        this.usernamesList.add(adminUsername + " (admin)");
         ServerSocketFactory factory = ServerSocketFactory.getDefault();
         try {
-            this.whiteboardSocket = factory.createServerSocket(3000);
+            this.whiteboardSocket = factory.createServerSocket(port);
             System.out.println("Server initialized, waiting for client connection...");
 
             // Extremely cursed / 10
@@ -64,7 +66,7 @@ public class WhiteboardServer {
                                 this.usernamesList.add(command.get("client-name").toString());
                                 this.multicastNewUser(this.usernamesList.lastElement().toString());
                                 this.clientList.put(command.get("client-name").toString(), client);
-                                resultMessage.put("result", "accepted");
+                                resultMessage.put("result", this.chatPort);
                                 output.writeUTF(resultMessage.toJSONString());
                                 output.flush();
                                 Socket finalClient = client;
@@ -293,5 +295,9 @@ public class WhiteboardServer {
         output.flush();
         output.write(byteArrayOutputStream.toByteArray());
         output.flush();
+    }
+
+    public void setChatPort(int port){
+        this.chatPort = port;
     }
 }
