@@ -173,7 +173,7 @@ public class JoinWhiteboard {
                 conn.input.read(sizeArr);
                 int size = ByteBuffer.wrap(sizeArr).asIntBuffer().get();
                 byte[] imageArr = new byte[size];
-                conn.input.read(imageArr);
+                conn.input.readFully(imageArr);
                 BufferedImage newImage = ImageIO.read(new ByteArrayInputStream(imageArr));
                 whiteboardUI.getDrawingPanel().openFile(null, newImage);
             } else {
