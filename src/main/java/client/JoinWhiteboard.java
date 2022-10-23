@@ -16,6 +16,7 @@ import java.net.Socket;
 import java.net.ConnectException;
 import java.nio.ByteBuffer;
 import java.util.Vector;
+import java.util.regex.Pattern;
 
 public class JoinWhiteboard {
 
@@ -26,15 +27,19 @@ public class JoinWhiteboard {
     static Vector connectedUsers;
 
     public static void main(String[] args) {
-        if (args.length < 1) {
-            System.out.println("Invalid arguments, retry the command using the syntax: JoinWhiteBoard <ip> <port> <username>");
+        if (args.length != 3) {
+            System.out.println("Invalid arguments, retry the command using the syntax: JoinWhiteBoard <username> <ip> <port>");
             return;
+        }
+        if (Pattern.matches("\\w+\\s\\(admin\\)", args[0])){
+            System.out.println("Illegal username, please choose a different one");
+            System.exit(0);
         }
         connectedUsers = new Vector<>();
         try {
             JSONParser parser = new JSONParser();
             System.out.println("Requesting access to whiteboard...");
-            conn = new Connection(args[1], 3000);
+            conn = new Connection(args[1], Integer.parseInt(args[2]));
             JSONObject connectionRequest = new JSONObject();
             conn.setUsername(args[0]);
 //            conn.setUsername("user1");
@@ -51,7 +56,7 @@ public class JoinWhiteboard {
                 System.out.println("Username is already being used, please choose a different one and try again.");
                 return;
             }
-
+            int chatPort = Integer.parseInt(response.get("result").toString());
             JSONObject fileNameObj = (JSONObject) parser.parse(conn.input.readUTF());
             System.out.println("File Name: " + fileNameObj.get("fileName").toString());
             byte[] sizeArr = new byte[4];
@@ -67,7 +72,7 @@ public class JoinWhiteboard {
             whiteboardUI = new WhiteboardUI("Whiteboard Client - " + args[0], false, conn);
             whiteboardUI.setVisible(true);
 
-            chatConn = new Connection(args[1], 3001);
+            chatConn = new Connection(args[1], chatPort);
             chatConn.output.writeUTF(connectionRequest.toJSONString());
             chatConn.output.flush();
             chatConn.input.readUTF();
@@ -90,7 +95,8 @@ public class JoinWhiteboard {
             System.out.println("An error occurred while connecting to the administrator's whiteboard. Check the IP address and try again.");
             return;
         } catch (IOException | ParseException e) {
-            throw new RuntimeException(e);
+            System.out.println("An error occurred while connecting to the administrator's whiteboard. Please try again.");
+            return;
         }
 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -106,7 +112,7 @@ public class JoinWhiteboard {
                     File currentFile = new File(whiteboardUI.getDrawingPanel().getFileName());
                     currentFile.delete();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    System.out.println("An error occurred while shutting down the whiteboard.");
                 }
             }
         }, "Shutdown-thread"));
@@ -124,7 +130,7 @@ public class JoinWhiteboard {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Whiteboard server connection unexpectedly terminated.");
         }
     }
 
@@ -135,11 +141,11 @@ public class JoinWhiteboard {
         try {
             command = (JSONObject) parser.parse(input.readUTF());
             if (command.containsKey("killall")) {
-                JOptionPane.showMessageDialog(whiteboardUI, "Admin closed");
+                JOptionPane.showMessageDialog(whiteboardUI, "Admin closed the whiteboard connection");
                 System.exit(0);
             }
             if (command.containsKey("kicked")) {
-                JOptionPane.showMessageDialog(whiteboardUI, "You have been kicked");
+                JOptionPane.showMessageDialog(whiteboardUI, "You have been removed from the whiteboard");
                 System.exit(0);
             }
             if (command.containsKey("new-user")) {
@@ -182,7 +188,7 @@ public class JoinWhiteboard {
                 whiteboardUI.getDrawingPanel().draw(drawMode, rgbValue, lineWidth, first, second, textInput);
             }
         } catch (ParseException | IOException e) {
-            throw new RuntimeException(e);
+            System.out.println("Failed to parse whiteboard server command");
         }
         return false;
     }
@@ -198,7 +204,7 @@ public class JoinWhiteboard {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Chat server connection unexpectedly terminated.");
         }
     }
 
@@ -221,7 +227,7 @@ public class JoinWhiteboard {
             String message = command.get("message").toString();
             whiteboardUI.getChat().addReceivedMessage(username, message);
         } catch (ParseException | IOException e) {
-            throw new RuntimeException(e);
+            System.out.println("Failed to parse chat server command");
         }
         return false;
     }

@@ -21,9 +21,17 @@ public class ChatServer {
     private Chat chat;
     private int port;
 
-    public ChatServer(Chat chat) throws IOException {
+    public ChatServer(Chat chat, int port) throws IOException {
         this.clientList = new ConcurrentHashMap<>();
-        this.port = 3001;
+        if (port <= 1023 || port > 65535){
+            System.out.println("Please choose a port in the valid range.");
+            System.exit(0);
+        }
+        if (port == 65535){
+            this.port = port - 1;
+        } else {
+            this.port = port + 1;
+        }
         this.chat = chat;
         ServerSocketFactory factory = ServerSocketFactory.getDefault();
         try {
@@ -45,12 +53,12 @@ public class ChatServer {
                         Thread t = new Thread(() -> serveClient(finalClient));
                         t.start();
                     } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        System.out.println("Unable to add client to chat list.");
                     }
                 }
             }).start();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("An error occurred while starting the main chat thread.");
         }
     }
 
@@ -79,7 +87,7 @@ public class ChatServer {
                 }
             }
         } catch (IOException | ParseException e) {
-            e.printStackTrace();
+            System.out.println("Chat server connection unexpectedly terminated.");
         }
     }
 
@@ -89,7 +97,7 @@ public class ChatServer {
         // Attempt to convert read data to JSON
         JSONObject command = (JSONObject) parser.parse(readMessage(input));
 
-        if (command.containsKey("disconnected")){
+        if (command.containsKey("disconnected")) {
             this.clientList.remove(command.get("disconnected").toString());
             // Since client has disconnected, we return true
             return true;
@@ -101,7 +109,7 @@ public class ChatServer {
         this.chat.addReceivedMessage(username, message);
 
         this.clientList.forEach((user, conn) -> {
-            if (!user.equals(username)){
+            if (!user.equals(username)) {
                 try {
                     DataOutputStream output = new DataOutputStream(conn.getOutputStream());
                     output.writeUTF(command.toJSONString());
@@ -115,7 +123,7 @@ public class ChatServer {
         return false;
     }
 
-    public void multicastMessage(JSONObject messageCommand){
+    public void multicastMessage(JSONObject messageCommand) {
         this.clientList.forEach((user, conn) -> {
             System.out.println(user);
             if (!messageCommand.containsKey("username")) {
@@ -131,7 +139,7 @@ public class ChatServer {
         });
     }
 
-    public void kickUser(String username){
+    public void kickUser(String username) {
         Socket client = this.clientList.get(username);
         try {
             DataOutputStream outputStream = new DataOutputStream(client.getOutputStream());
@@ -142,12 +150,16 @@ public class ChatServer {
             client.close();
             this.clientList.remove(username);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.out.println("An error occurred while removing a client.");
         }
     }
 
     public String readMessage(DataInputStream input) throws IOException {
         return input.readUTF();
+    }
+
+    public int getPort(){
+        return this.port;
     }
 
 }

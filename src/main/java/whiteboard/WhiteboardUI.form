@@ -76,6 +76,8 @@
               <component id="382a9" class="javax.swing.JButton" binding="btnFile">
                 <constraints/>
                 <properties>
+                  <maximumSize width="200" height="40"/>
+                  <minimumSize width="200" height="40"/>
                   <text value="File"/>
                 </properties>
               </component>
