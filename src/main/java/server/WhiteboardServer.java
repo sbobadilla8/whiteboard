@@ -77,12 +77,12 @@ public class WhiteboardServer {
                             }
                         }
                     } catch (IOException | ParseException e) {
-                        throw new RuntimeException(e);
+                        System.out.println("Unable to add client to whiteboard list.");
                     }
                 }
             }).start();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("An error occurred while starting the main whiteboard thread.");
         }
     }
 
@@ -174,7 +174,7 @@ public class WhiteboardServer {
                 DataOutputStream output = new DataOutputStream(conn.getOutputStream());
                 sendImage(output, fileName);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                System.out.println("Failed to send image to user "+user);
             }
         });
     }
@@ -246,7 +246,7 @@ public class WhiteboardServer {
             this.usernamesList.remove(username);
             multicastUsers(username);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.out.println("An error occurred while removing client.");
         }
     }
 

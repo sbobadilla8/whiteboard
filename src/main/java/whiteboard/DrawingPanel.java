@@ -251,7 +251,7 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
         try {
             writeFile(fileName);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.out.println("Failed to save changes to the file.");
         }
         try {
             JLabel newImageLabel = new JLabel(new ImageIcon(ImageIO.read(new File(fileName))));
@@ -260,7 +260,7 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
             this.add(imageLabel);
             this.revalidate();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.out.println("Failed to read image from file.");
         }
 
         this.repaint();
@@ -299,7 +299,8 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
             return writeFile(fileName.isEmpty() ? "whiteboard_SNAPSHOT.png" : fileName);
         }
         catch(IOException e) {
-            throw new RuntimeException(e);
+            System.out.println("Failed to save changes to the file.");
+            return false;
         }
     }
 
@@ -316,7 +317,7 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
                 this.server.multicastImage(openedFile.getName());
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.out.println("Failed to read image from file.");
         }
     }
 

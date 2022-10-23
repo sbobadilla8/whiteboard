@@ -38,14 +38,14 @@ public class Chat {
             String newText = "";
             for (int i = 0; i < previous.length - 1; i++) {
                 if (!previous[i].equals("")) {
-                    newText += "<p><span color='red'>" + previous[i] + ": " + "</span>" + previous[i + 1].trim().replaceAll(" +", " ") + "</p>";
+                    newText += "<p><span color='red' style='font-size: 1.2em;'>" + previous[i] + ": " + "</span>" + previous[i + 1].trim().replaceAll(" +", " ") + "</p>";
                     i += 1;
                 }
             }
-            newText += "<p><span color='red'>" + username + ": " + "</span>" + message + "</p>";
+            newText += "<p><span color='red' style='font-size: 1.2em;'>" + username + ": " + "</span>" + message + "</p>";
             chatPanel.setText(newText);
         } catch (BadLocationException e) {
-            throw new RuntimeException(e);
+            System.out.println("Unable to add chat message to chat panel.");
         }
     }
 

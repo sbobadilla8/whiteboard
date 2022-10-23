@@ -45,12 +45,12 @@ public class ChatServer {
                         Thread t = new Thread(() -> serveClient(finalClient));
                         t.start();
                     } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        System.out.println("Unable to add client to chat list.");
                     }
                 }
             }).start();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("An error occurred while starting the main chat thread.");
         }
     }
 
@@ -79,7 +79,7 @@ public class ChatServer {
                 }
             }
         } catch (IOException | ParseException e) {
-            e.printStackTrace();
+            System.out.println("Chat server connection unexpectedly terminated.");
         }
     }
 
@@ -142,7 +142,7 @@ public class ChatServer {
             client.close();
             this.clientList.remove(username);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.out.println("An error occurred while removing a client.");
         }
     }
 

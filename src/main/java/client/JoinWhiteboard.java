@@ -27,7 +27,7 @@ public class JoinWhiteboard {
 
     public static void main(String[] args) {
         if (args.length < 1) {
-            System.out.println("Invalid arguments, retry the command using the syntax: JoinWhiteBoard <ip> <port> <username>");
+            System.out.println("Invalid arguments, retry the command using the syntax: JoinWhiteBoard <username> <ip>");
             return;
         }
         connectedUsers = new Vector<>();
@@ -90,7 +90,8 @@ public class JoinWhiteboard {
             System.out.println("An error occurred while connecting to the administrator's whiteboard. Check the IP address and try again.");
             return;
         } catch (IOException | ParseException e) {
-            throw new RuntimeException(e);
+            System.out.println("An error occurred while connecting to the administrator's whiteboard. Please try again.");
+            return;
         }
 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -106,7 +107,7 @@ public class JoinWhiteboard {
                     File currentFile = new File(whiteboardUI.getDrawingPanel().getFileName());
                     currentFile.delete();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    System.out.println("An error occurred while shutting down the whiteboard.");
                 }
             }
         }, "Shutdown-thread"));
@@ -124,7 +125,7 @@ public class JoinWhiteboard {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Whiteboard server connection unexpectedly terminated.");
         }
     }
 
@@ -135,11 +136,11 @@ public class JoinWhiteboard {
         try {
             command = (JSONObject) parser.parse(input.readUTF());
             if (command.containsKey("killall")) {
-                JOptionPane.showMessageDialog(whiteboardUI, "Admin closed");
+                JOptionPane.showMessageDialog(whiteboardUI, "Admin closed the whiteboard connection");
                 System.exit(0);
             }
             if (command.containsKey("kicked")) {
-                JOptionPane.showMessageDialog(whiteboardUI, "You have been kicked");
+                JOptionPane.showMessageDialog(whiteboardUI, "You have been removed from the whiteboard");
                 System.exit(0);
             }
             if (command.containsKey("new-user")) {
@@ -182,7 +183,7 @@ public class JoinWhiteboard {
                 whiteboardUI.getDrawingPanel().draw(drawMode, rgbValue, lineWidth, first, second, textInput);
             }
         } catch (ParseException | IOException e) {
-            throw new RuntimeException(e);
+            System.out.println("Failed to parse whiteboard server command");
         }
         return false;
     }
@@ -198,7 +199,7 @@ public class JoinWhiteboard {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Chat server connection unexpectedly terminated.");
         }
     }
 
@@ -221,7 +222,7 @@ public class JoinWhiteboard {
             String message = command.get("message").toString();
             whiteboardUI.getChat().addReceivedMessage(username, message);
         } catch (ParseException | IOException e) {
-            throw new RuntimeException(e);
+            System.out.println("Failed to parse chat server command");
         }
         return false;
     }
