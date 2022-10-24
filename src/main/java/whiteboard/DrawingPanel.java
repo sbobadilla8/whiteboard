@@ -322,6 +322,9 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
 
     private synchronized boolean writeFile(String fileName) throws IOException {
         String extension = ImageFilter.getExtension(fileName);
+        if(extension != null && !extension.equals("png") && !extension.equals("jpg") && !extension.equals("bmp")) {
+            return false;
+        }
         if (extension == null){
             extension = "png";
             fileName += ".png";

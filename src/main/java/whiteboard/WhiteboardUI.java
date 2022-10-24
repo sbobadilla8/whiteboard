@@ -133,7 +133,7 @@ public class WhiteboardUI extends JFrame implements ActionListener {
                         if (res) {
                             JOptionPane.showMessageDialog(mainPanel, "File saved successfully.");
                         } else {
-                            JOptionPane.showMessageDialog(mainPanel, "Could not save file, try again.");
+                            JOptionPane.showMessageDialog(mainPanel, "Could not save file, try again using the supported extensions bmp, jpg, png.");
                         }
                     }
                 }
