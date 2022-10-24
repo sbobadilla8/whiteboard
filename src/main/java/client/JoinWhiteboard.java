@@ -178,7 +178,9 @@ public class JoinWhiteboard {
                 whiteboardUI.getDrawingPanel().openFile(null, newImage);
             } else {
                 String drawMode = command.get("draw-mode").toString();
-                int rgbValue = Integer.parseInt(command.get("paint-color").toString());
+                Color rgbValue = Color.decode(command.get("paint-color").toString());
+                Color fullColor = new Color(rgbValue.getRed(), rgbValue.getGreen(), rgbValue.getBlue(), Integer.parseInt(command.get("color-alpha").toString()));
+                boolean fillForm = Boolean.parseBoolean(command.get("filled").toString());
                 float lineWidth = Float.parseFloat(command.get("line-width").toString());
                 String firstPoints = command.get("first-point").toString();
                 JSONObject firstPoint = (JSONObject) parser.parse(firstPoints);
@@ -191,7 +193,7 @@ public class JoinWhiteboard {
                 int y2 = Integer.parseInt(secondPoint.get("y").toString());
                 Point second = new Point(x2, y2);
                 String textInput = command.get("text-input").toString();
-                whiteboardUI.getDrawingPanel().draw(drawMode, rgbValue, lineWidth, first, second, textInput);
+                whiteboardUI.getDrawingPanel().draw(drawMode, fullColor, fillForm, lineWidth, first, second, textInput);
             }
         } catch (ParseException | IOException e) {
             System.out.println("Failed to parse whiteboard server command");

@@ -136,7 +136,9 @@ public class WhiteboardServer {
 
         String username = command.get("username").toString();
         String drawMode = command.get("draw-mode").toString();
-        int rgbValue = Integer.parseInt(command.get("paint-color").toString());
+        Color rgbValue = Color.decode(command.get("paint-color").toString());
+        Color fullColor = new Color(rgbValue.getRed(), rgbValue.getGreen(), rgbValue.getBlue(), Integer.parseInt(command.get("color-alpha").toString()));
+        boolean fillForm = Boolean.parseBoolean(command.get("filled").toString());
         float lineWidth = Float.parseFloat(command.get("line-width").toString());
         String firstPoints = command.get("first-point").toString();
         JSONObject firstPoint = (JSONObject) parser.parse(firstPoints);
@@ -149,7 +151,7 @@ public class WhiteboardServer {
         int y2 = Integer.parseInt(secondPoint.get("y").toString());
         Point second = new Point(x2, y2);
         String textInput = command.get("text-input").toString();
-        this.whiteboard.draw(drawMode, rgbValue, lineWidth, first, second, textInput);
+        this.whiteboard.draw(drawMode, fullColor, fillForm, lineWidth, first, second, textInput);
 
         this.clientList.forEach((user, conn) -> {
             if (!user.equals(username)) {

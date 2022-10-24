@@ -3,4 +3,9 @@ target/
 .idea/
 .fleet/
 *.png
+*.jpg
+*.bmp
+*.PNG
+*.JPG
+*.BMP
 target*/

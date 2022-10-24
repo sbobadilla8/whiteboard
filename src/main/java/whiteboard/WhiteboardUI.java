@@ -5,6 +5,7 @@ import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 
 import javax.swing.*;
+import javax.swing.colorchooser.AbstractColorChooserPanel;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -21,7 +22,7 @@ public class WhiteboardUI extends JFrame implements ActionListener {
     private JButton btnText;
     private JButton btnFile;
     private JButton btnColor;
-    private JTextPane rgbShow;
+    private JPanel rgbDisplay;
     private JPanel drawingPanelContainer;
     private JButton btnLineWidth;
     private JPanel connectedUsersContainer;
@@ -32,9 +33,12 @@ public class WhiteboardUI extends JFrame implements ActionListener {
     private JList connectedUsers;
     private JButton btnKick;
     private JScrollPane chatScrollContainer;
+    private JCheckBox fillForm;
     private DrawingPanel drawingPanel;
     private Chat chat;
     private JFileChooser fileChooser;
+
+    private JColorChooser colorChooser;
 
 
     public WhiteboardUI(String title, Boolean isAdmin, Connection conn) {
@@ -51,6 +55,22 @@ public class WhiteboardUI extends JFrame implements ActionListener {
         final JPopupMenu filePopup = new JPopupMenu();
         final JPopupMenu colorPopup = new JPopupMenu();
         final JPopupMenu lineWidthPopup = new JPopupMenu();
+
+        this.colorChooser = new JColorChooser(Color.black);
+        drawingPanel.setRgbValue(colorChooser.getColor());
+        rgbDisplay.setOpaque(true);
+        rgbDisplay.setBackground(new Color(colorChooser.getColor().getRed(), colorChooser.getColor().getGreen(), colorChooser.getColor().getBlue(), colorChooser.getColor().getAlpha()));
+        AbstractColorChooserPanel[] panels = colorChooser.getChooserPanels();
+        for (AbstractColorChooserPanel accp : panels) {
+            if (!accp.getDisplayName().equals("HSV")) {
+                colorChooser.removeChooserPanel(accp);
+            }
+        }
+        colorChooser.setPreviewPanel(new JPanel());
+        colorChooser.getSelectionModel().addChangeListener(e -> {
+            drawingPanel.setRgbValue(colorChooser.getColor());
+            rgbDisplay.setBackground(new Color(colorChooser.getColor().getRed(), colorChooser.getColor().getGreen(), colorChooser.getColor().getBlue(), colorChooser.getColor().getAlpha()));
+        });
 
         this.fileChooser = new JFileChooser();
         this.fileChooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
@@ -179,6 +199,10 @@ public class WhiteboardUI extends JFrame implements ActionListener {
         btnCircle.addActionListener(this);
         btnFree.addActionListener(this);
         btnText.addActionListener(this);
+//        fillForm = new JCheckBox("Fill form?", false);
+        fillForm.addActionListener(e -> {
+            drawingPanel.setFillForm(fillForm.isSelected());
+        });
 
         btnSend.addMouseListener(new MouseAdapter() {
             @Override
@@ -234,56 +258,7 @@ public class WhiteboardUI extends JFrame implements ActionListener {
             }
         });
 
-        JLabel redLabel = new JLabel("Red");
-        JLabel blueLabel = new JLabel("Blue");
-        JLabel greenLabel = new JLabel("Green");
-        JSlider redSlider = new JSlider();
-        redSlider.setMinimum(0);
-        redSlider.setMaximum(255);
-        JSlider blueSlider = new JSlider();
-        blueSlider.setMinimum(0);
-        blueSlider.setMaximum(255);
-        JSlider greenSlider = new JSlider();
-        greenSlider.setMinimum(0);
-        greenSlider.setMaximum(255);
-
-        this.drawingPanel.setRgbValue(new Color(redSlider.getValue(), greenSlider.getValue(), blueSlider.getValue()).getRGB());
-
-        rgbShow.setForeground(new Color(this.drawingPanel.getRgbValue()));
-        rgbShow.setBackground(new Color(this.drawingPanel.getRgbValue()));
-        redSlider.addChangeListener(e -> {
-            drawingPanel.setRgbValue(new Color(redSlider.getValue(), greenSlider.getValue(), blueSlider.getValue()).getRGB());
-            rgbShow.setForeground(new Color(drawingPanel.getRgbValue()));
-            rgbShow.setBackground(new Color(drawingPanel.getRgbValue()));
-        });
-
-        blueSlider.addChangeListener(e -> {
-            drawingPanel.setRgbValue(new Color(redSlider.getValue(), greenSlider.getValue(), blueSlider.getValue()).getRGB());
-            rgbShow.setForeground(new Color(drawingPanel.getRgbValue()));
-            rgbShow.setBackground(new Color(drawingPanel.getRgbValue()));
-        });
-
-        greenSlider.addChangeListener(e -> {
-            drawingPanel.setRgbValue(new Color(redSlider.getValue(), greenSlider.getValue(), blueSlider.getValue()).getRGB());
-            rgbShow.setForeground(new Color(drawingPanel.getRgbValue()));
-            rgbShow.setBackground(new Color(drawingPanel.getRgbValue()));
-        });
-
-        JPanel red = new JPanel();
-        red.add(redLabel);
-        red.add(redSlider);
-
-        JPanel green = new JPanel();
-        green.add(greenLabel);
-        green.add(greenSlider);
-
-        JPanel blue = new JPanel();
-        blue.add(blueLabel);
-        blue.add(blueSlider);
-
-        colorPopup.add(red);
-        colorPopup.add(green);
-        colorPopup.add(blue);
+        colorPopup.add(colorChooser);
         btnColor.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
                 colorPopup.show(e.getComponent(), e.getX(), e.getY() + 10);
@@ -391,7 +366,7 @@ public class WhiteboardUI extends JFrame implements ActionListener {
         mainPanel = new JPanel();
         mainPanel.setLayout(new GridLayoutManager(3, 1, new Insets(0, 0, 0, 0), -1, -1));
         final JPanel panel1 = new JPanel();
-        panel1.setLayout(new GridLayoutManager(1, 10, new Insets(0, 0, 0, 0), -1, -1));
+        panel1.setLayout(new GridLayoutManager(1, 11, new Insets(0, 0, 0, 0), -1, -1));
         mainPanel.add(panel1, new GridConstraints(0, 0, 2, 1, GridConstraints.ANCHOR_NORTHWEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         btnRectangle = new JButton();
         btnRectangle.setText("Rectangle");
@@ -414,17 +389,24 @@ public class WhiteboardUI extends JFrame implements ActionListener {
         final JToolBar toolBar1 = new JToolBar();
         panel1.add(toolBar1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(-1, 20), null, 0, false));
         btnFile = new JButton();
+        btnFile.setMaximumSize(new Dimension(80, 20));
+        btnFile.setMinimumSize(new Dimension(80, 20));
         btnFile.setText("File");
         toolBar1.add(btnFile);
         btnColor = new JButton();
         btnColor.setText("Color");
         panel1.add(btnColor, new GridConstraints(0, 8, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        rgbShow = new JTextPane();
-        rgbShow.setText("Label");
-        panel1.add(rgbShow, new GridConstraints(0, 9, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         btnLineWidth = new JButton();
         btnLineWidth.setText("Line width");
         panel1.add(btnLineWidth, new GridConstraints(0, 7, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        rgbDisplay = new JPanel();
+        rgbDisplay.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        rgbDisplay.setOpaque(true);
+        panel1.add(rgbDisplay, new GridConstraints(0, 9, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_VERTICAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(60, 30), null, 1, false));
+        fillForm = new JCheckBox();
+        fillForm.setEnabled(true);
+        fillForm.setText("Fill Form?");
+        panel1.add(fillForm, new GridConstraints(0, 10, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel2 = new JPanel();
         panel2.setLayout(new GridLayoutManager(1, 3, new Insets(0, 0, 0, 0), -1, -1));
         mainPanel.add(panel2, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_NORTHWEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));

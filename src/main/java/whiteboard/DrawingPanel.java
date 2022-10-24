@@ -24,13 +24,14 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
     private Point first = new Point(0, 0);
     private Point second = new Point(0, 0);
     private JLabel imageLabel;
-    private int rgbValue;
+    private Color rgbValue;
     private float lineWidth;
     private JTextField textInput;
     private String fileName;
     private Boolean isAdmin;
     private Connection connection;
     private WhiteboardServer server;
+    private boolean fillForm;
 
     public DrawingPanel(Boolean isAdmin, Connection conn) {
         this.isAdmin = isAdmin;
@@ -87,16 +88,20 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
         return this.lineWidth;
     }
 
-    public int getRgbValue() {
+    public Color getRgbValue() {
         return rgbValue;
     }
 
-    public void setRgbValue(int newValue) {
+    public void setRgbValue(Color newValue) {
         this.rgbValue = newValue;
     }
 
     public JTextField getTextInput() {
         return this.textInput;
+    }
+
+    public void setFillForm(boolean fillForm) {
+        this.fillForm = fillForm;
     }
 
     @Override
@@ -172,7 +177,9 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
     //    @Override
     public void draw() {
         JSONObject drawCommand = new JSONObject();
-        drawCommand.put("paint-color", this.rgbValue);
+        drawCommand.put("paint-color", this.rgbValue.getRGB());
+        drawCommand.put("color-alpha", this.rgbValue.getAlpha());
+        drawCommand.put("filled", this.fillForm);
         drawCommand.put("line-width", this.lineWidth);
         drawCommand.put("draw-mode", this.drawMode);
         Map<String, Integer> firstMap = new HashMap<>();
@@ -192,20 +199,20 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
             } catch (IOException e) {
                 JOptionPane.showMessageDialog(this, "Error while writing input to server");
             }
-            drawAndSaveCanvas(this.drawMode, this.rgbValue, this.lineWidth, this.first, this.second, this.textInput.getText());
+            drawAndSaveCanvas(this.drawMode, this.rgbValue, this.fillForm, this.lineWidth, this.first, this.second, this.textInput.getText());
         } else {
-            drawAndSaveCanvas(this.drawMode, this.rgbValue, this.lineWidth, this.first, this.second, this.textInput.getText());
+            drawAndSaveCanvas(this.drawMode, this.rgbValue, this.fillForm, this.lineWidth, this.first, this.second, this.textInput.getText());
             this.server.multicastDrawing(drawCommand);
         }
     }
 
-    public synchronized void draw(String drawMode, int rgbValue, float lineWidth, Point first, Point second, String textInput) {
-        drawAndSaveCanvas(drawMode, rgbValue, lineWidth, first, second, textInput);
+    public synchronized void draw(String drawMode, Color rgbValue, boolean fillForm, float lineWidth, Point first, Point second, String textInput) {
+        drawAndSaveCanvas(drawMode, rgbValue, fillForm, lineWidth, first, second, textInput);
     }
 
     // Synchronized since multiple whiteboard server threads may access this
-    public synchronized void drawAndSaveCanvas(String drawMode, int rgbValue, float lineWidth, Point first, Point second, String textInput) {
-        this.g2d.setPaint(new Color(rgbValue));
+    public synchronized void drawAndSaveCanvas(String drawMode, Color rgbValue, boolean fillForm, float lineWidth, Point first, Point second, String textInput) {
+        this.g2d.setPaint(rgbValue);
         this.g2d.setStroke(new BasicStroke(lineWidth));
         if (drawMode.equals("Text")) {
             Font font = new Font("TimesRoman", Font.BOLD, (int) lineWidth * 2);
@@ -222,7 +229,11 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
                     Point topLeft = new Point();
                     topLeft.x = Math.min(first.x, second.x);
                     topLeft.y = Math.min(first.y, second.y);
-                    this.g2d.drawRect(topLeft.x, topLeft.y, width, height);
+                    if (fillForm) {
+                        this.g2d.fillRect(topLeft.x, topLeft.y, width, height);
+                    } else {
+                        this.g2d.drawRect(topLeft.x, topLeft.y, width, height);
+                    }
                     break;
                 case "Circle":
                     width = Math.abs(second.x - first.x);
@@ -230,13 +241,20 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
                     topLeft = new Point();
                     topLeft.x = Math.min(first.x, second.x);
                     topLeft.y = Math.min(first.y, second.y);
-                    this.g2d.drawOval(topLeft.x, topLeft.y, width, height);
+                    if (fillForm) {
+                        this.g2d.fillOval(topLeft.x, topLeft.y, width, height);
+                    } else {
+                        this.g2d.drawOval(topLeft.x, topLeft.y, width, height);
+                    }
                     break;
                 case "Triangle":
                     int[] xPoints = {first.x, (first.x + second.x) / 2, second.x};
                     int[] yPoints = {second.y, first.y, second.y};
-
-                    this.g2d.drawPolygon(xPoints, yPoints, 3);
+                    if (fillForm) {
+                        this.g2d.fillPolygon(xPoints, yPoints, 3);
+                    } else {
+                        this.g2d.drawPolygon(xPoints, yPoints, 3);
+                    }
                     break;
                 case "Free":
                     this.g2d.drawLine(first.x, first.y, second.x, second.y);
@@ -275,11 +293,13 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
             this.g2d.fillRect(0, 0, this.width, this.height);
         } else {
             System.out.println("Initializing whiteboard clear ...");
-            draw("Clean", this.rgbValue, this.lineWidth, new Point(0, 0), new Point(0, 1), "");
+            draw("Clean", this.rgbValue, true, this.lineWidth, new Point(0, 0), new Point(0, 1), "");
             JSONObject drawCommand = new JSONObject();
-            drawCommand.put("paint-color", this.rgbValue);
+            drawCommand.put("paint-color", Color.WHITE.getRGB());
             drawCommand.put("line-width", this.lineWidth);
+            drawCommand.put("color-alpha", 0);
             drawCommand.put("draw-mode", "Clean");
+            drawCommand.put("filled", true);
             Map<String, Integer> firstMap = new HashMap<>();
             Map<String, Integer> secondMap = new HashMap<>();
             firstMap.put("x", 0);
@@ -322,10 +342,10 @@ public class DrawingPanel extends JPanel implements ActionListener, MouseListene
 
     private synchronized boolean writeFile(String fileName) throws IOException {
         String extension = ImageFilter.getExtension(fileName);
-        if(extension != null && !extension.equals("png") && !extension.equals("jpg") && !extension.equals("bmp")) {
+        if (extension != null && !extension.equals("png") && !extension.equals("jpg") && !extension.equals("bmp")) {
             return false;
         }
-        if (extension == null){
+        if (extension == null) {
             extension = "png";
             fileName += ".png";
         }

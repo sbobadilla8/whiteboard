@@ -8,7 +8,7 @@
     <properties/>
     <border type="none"/>
     <children>
-      <grid id="f2922" layout-manager="GridLayoutManager" row-count="1" column-count="10" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="f2922" layout-manager="GridLayoutManager" row-count="1" column-count="11" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
           <grid row="0" column="0" row-span="2" col-span="1" vsize-policy="0" hsize-policy="2" anchor="9" fill="0" indent="0" use-parent-layout="false"/>
@@ -76,8 +76,8 @@
               <component id="382a9" class="javax.swing.JButton" binding="btnFile">
                 <constraints/>
                 <properties>
-                  <maximumSize width="200" height="40"/>
-                  <minimumSize width="200" height="40"/>
+                  <maximumSize width="80" height="20"/>
+                  <minimumSize width="80" height="20"/>
                   <text value="File"/>
                 </properties>
               </component>
@@ -91,20 +91,34 @@
               <text value="Color"/>
             </properties>
           </component>
-          <component id="b7694" class="javax.swing.JTextPane" binding="rgbShow">
-            <constraints>
-              <grid row="0" column="9" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <text value="Label"/>
-            </properties>
-          </component>
           <component id="ae6a5" class="javax.swing.JButton" binding="btnLineWidth">
             <constraints>
               <grid row="0" column="7" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <text value="Line width"/>
+            </properties>
+          </component>
+          <grid id="3dfb6" binding="rgbDisplay" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
+            <constraints>
+              <grid row="0" column="9" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="2" indent="1" use-parent-layout="false">
+                <preferred-size width="60" height="30"/>
+              </grid>
+            </constraints>
+            <properties>
+              <opaque value="true"/>
+            </properties>
+            <border type="none"/>
+            <children/>
+          </grid>
+          <component id="fc772" class="javax.swing.JCheckBox" binding="fillForm">
+            <constraints>
+              <grid row="0" column="10" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <enabled value="true"/>
+              <text value="Fill Form?"/>
             </properties>
           </component>
         </children>
