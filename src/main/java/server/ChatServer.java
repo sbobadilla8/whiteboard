@@ -16,10 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ChatServer {
     private ServerSocket chatSocket;
     private ConcurrentHashMap<String, Socket> clientList;
-    private ConcurrentHashMap<Integer, String> unsentChats;
-
     private Chat chat;
-    private int port;
 
     public ChatServer(Chat chat) throws IOException {
         this.clientList = new ConcurrentHashMap<>();
@@ -115,8 +112,8 @@ public class ChatServer {
 
     public void multicastMessage(JSONObject messageCommand) {
         this.clientList.forEach((user, conn) -> {
-            System.out.println(user);
-            if (!messageCommand.containsKey("username")) {
+//            System.out.println(user);
+//            if (!messageCommand.containsKey("username")) {
                 try {
                     DataOutputStream output = new DataOutputStream(conn.getOutputStream());
                     output.writeUTF(messageCommand.toJSONString());
@@ -125,7 +122,7 @@ public class ChatServer {
                     System.out.println("Client disconnected");
                     this.clientList.remove(user);
                 }
-            }
+//            }
         });
     }
 

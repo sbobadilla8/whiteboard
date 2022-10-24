@@ -32,6 +32,7 @@ public class WhiteboardServer {
     public WhiteboardServer(String fileName, DrawingPanel whiteboard, String adminUsername, int port) throws IOException {
         this.clientList = new ConcurrentHashMap<>();
         this.fileName = fileName;
+        this.admin = adminUsername;
         this.whiteboard = whiteboard;
         this.usernamesList = new Vector<>();
         this.usernamesList.add(adminUsername + " (admin)");
@@ -300,5 +301,9 @@ public class WhiteboardServer {
 
     public void setChatPort(int port){
         this.chatPort = port;
+    }
+
+    public String getUsername(){
+        return this.admin;
     }
 }

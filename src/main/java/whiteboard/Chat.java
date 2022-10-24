@@ -52,22 +52,25 @@ public class Chat {
     public void sendMessage(String message) {
         JSONObject messageCommand = new JSONObject();
         messageCommand.put("message", message);
-        if (!isAdmin) {
-            messageCommand.put("username", this.connection.getUsername());
-            try {
-                connection.output.writeUTF(messageCommand.toJSONString());
-                connection.output.flush();
-            } catch (IOException e) {
-                addReceivedMessage("error", "Error while sending message");
-            }
-            addReceivedMessage("me", message);
-        } else {
-            addReceivedMessage("me", message);
-            this.chatServer.multicastMessage(messageCommand);
+        messageCommand.put("username", this.connection.getUsername());
+        try {
+            connection.output.writeUTF(messageCommand.toJSONString());
+            connection.output.flush();
+        } catch (IOException e) {
+            addReceivedMessage("error", "Error while sending message");
         }
+        addReceivedMessage("me", message);
     }
 
-    public void kickUser(String username){
+    public void sendMessage(String message, String username) {
+        JSONObject messageCommand = new JSONObject();
+        messageCommand.put("message", message);
+        messageCommand.put("username", username);
+        addReceivedMessage("me", message);
+        this.chatServer.multicastMessage(messageCommand);
+    }
+
+    public void kickUser(String username) {
         this.chatServer.kickUser(username);
     }
 }

@@ -56,9 +56,9 @@ public class WhiteboardUI extends JFrame implements ActionListener {
         final JPopupMenu colorPopup = new JPopupMenu();
         final JPopupMenu lineWidthPopup = new JPopupMenu();
 
+
         this.colorChooser = new JColorChooser(Color.black);
         drawingPanel.setRgbValue(colorChooser.getColor());
-        rgbDisplay.setOpaque(true);
         rgbDisplay.setBackground(new Color(colorChooser.getColor().getRed(), colorChooser.getColor().getGreen(), colorChooser.getColor().getBlue(), colorChooser.getColor().getAlpha()));
         AbstractColorChooserPanel[] panels = colorChooser.getChooserPanels();
         for (AbstractColorChooserPanel accp : panels) {
@@ -207,7 +207,11 @@ public class WhiteboardUI extends JFrame implements ActionListener {
         btnSend.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                chat.sendMessage(chatInput.getText());
+                if (isAdmin) {
+                    chat.sendMessage(chatInput.getText(), drawingPanel.getUsername());
+                } else {
+                    chat.sendMessage(chatInput.getText());
+                }
                 chatInput.setText("");
             }
         });
