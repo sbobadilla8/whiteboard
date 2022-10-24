@@ -27,7 +27,7 @@ public class CreateWhiteboard {
         try {
             whiteboardServer = new WhiteboardServer(fileName, frame.getDrawingPanel(), args[0], Integer.parseInt(args[1]));
             frame.getDrawingPanel().setServer(whiteboardServer);
-            ChatServer chatServer = new ChatServer(frame.getChat(), Integer.parseInt(args[1]));
+            ChatServer chatServer = new ChatServer(frame.getChat());
             frame.getChat().setChatServer(chatServer);
             whiteboardServer.setConnectedUsersList(frame.getConnectedUsers());
             whiteboardServer.setChatPort(chatServer.getPort());

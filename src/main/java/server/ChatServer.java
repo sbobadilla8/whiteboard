@@ -21,22 +21,13 @@ public class ChatServer {
     private Chat chat;
     private int port;
 
-    public ChatServer(Chat chat, int port) throws IOException {
+    public ChatServer(Chat chat) throws IOException {
         this.clientList = new ConcurrentHashMap<>();
-        if (port <= 1023 || port > 65535){
-            System.out.println("Please choose a port in the valid range.");
-            System.exit(0);
-        }
-        if (port == 65535){
-            this.port = port - 1;
-        } else {
-            this.port = port + 1;
-        }
         this.chat = chat;
         ServerSocketFactory factory = ServerSocketFactory.getDefault();
         try {
-            this.chatSocket = factory.createServerSocket(this.port);
-            System.out.println("Chat server initialized on port " + this.port + ", waiting for client connection...");
+            this.chatSocket = factory.createServerSocket(0);
+            System.out.println("Chat server initialized on port " + getPort() + ", waiting for client connection...");
 
             // Extremely cursed / 10
             new Thread(() -> {
@@ -158,7 +149,7 @@ public class ChatServer {
     }
 
     public int getPort(){
-        return this.port;
+        return this.chatSocket.getLocalPort();
     }
 
 }
